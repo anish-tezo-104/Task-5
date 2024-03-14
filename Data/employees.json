@@ -1,20 +1,5 @@
 [
   {
-    "EmpNo": "TZ3828",
-    "StatusId": 1,
-    "FirstName": "Anish",
-    "LastName": "Mohanty",
-    "Dob": "2002-11-11T00:00:00",
-    "Email": "anishmohanty@gmail.com",
-    "MobileNumber": "6289047612",
-    "JoiningDate": "2024-02-17T00:00:00",
-    "LocationId": 4,
-    "JobTitle": "Full Stack Developer",
-    "DepartmentId": 1,
-    "AssignManager": "Hasnu",
-    "AssignProject": "C#"
-  },
-  {
     "EmpNo": "TZ7237",
     "StatusId": 2,
     "FirstName": "Vikash",
@@ -25,9 +10,9 @@
     "JoiningDate": "2023-08-27T00:00:00",
     "LocationId": 2,
     "JobTitle": "DevOps Engineer",
-    "DepartmentId": 1,
-    "AssignManager": "Manager 1",
-    "AssignProject": "Prohect 2"
+    "DepartmentId": 2,
+    "AssignManagerId": 3,
+    "AssignProjectId": 9
   },
   {
     "EmpNo": "TZ9001",
@@ -41,8 +26,8 @@
     "LocationId": 3,
     "JobTitle": "Associate System Engineer",
     "DepartmentId": 1,
-    "AssignManager": "Manager 1",
-    "AssignProject": "Project 2"
+    "AssignManagerId": 6,
+    "AssignProjectId": 3
   },
   {
     "EmpNo": "TZ6357",
@@ -56,8 +41,8 @@
     "LocationId": 3,
     "JobTitle": "Payroll Manager",
     "DepartmentId": 4,
-    "AssignManager": "Manager 3",
-    "AssignProject": null
+    "AssignManagerId": 9,
+    "AssignProjectId": 5
   },
   {
     "EmpNo": "TZ7384",
@@ -71,8 +56,8 @@
     "LocationId": 2,
     "JobTitle": "HR",
     "DepartmentId": 3,
-    "AssignManager": null,
-    "AssignProject": null
+    "AssignManagerId": 8,
+    "AssignProjectId": 10
   },
   {
     "EmpNo": "TZ5873",
@@ -86,7 +71,22 @@
     "LocationId": 3,
     "JobTitle": "Cloud Developer",
     "DepartmentId": 2,
-    "AssignManager": null,
-    "AssignProject": null
+    "AssignManagerId": 1,
+    "AssignProjectId": 2
+  },
+  {
+    "EmpNo": "TZ8493",
+    "StatusId": 1,
+    "FirstName": "Anish",
+    "LastName": "Mohanty",
+    "Dob": "2002-11-11T00:00:00",
+    "Email": "anishmohanty104@gmail.com",
+    "MobileNumber": "9494974832",
+    "JoiningDate": "2024-01-17T00:00:00",
+    "LocationId": 1,
+    "JobTitle": "Full Stack Developer",
+    "DepartmentId": 3,
+    "AssignManagerId": 4,
+    "AssignProjectId": 3
   }
 ]

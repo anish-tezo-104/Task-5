@@ -1,4 +1,5 @@
 namespace EmployeeManagementSystem.Models;
+
 public enum Status
 {
     Active = 1,

@@ -1,4 +1,5 @@
 namespace EmployeeManagementSystem.Utils;
+
 public interface ILogger
 {
     void LogError(string message, bool newLine = true);

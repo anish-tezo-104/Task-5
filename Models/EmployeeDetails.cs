@@ -1,10 +1,13 @@
-
 namespace EmployeeManagementSystem.Models;
+
 public class EmployeeDetails : Employee
 {
     public string? LocationName { get; set; } = string.Empty;
     public string? DepartmentName { get; set; } = string.Empty;
     public string? StatusName { get; set; } = string.Empty;
+    public string? AssignManagerName { get; set; } = string.Empty;
+    public string? AssignProjectName { get; set; } = string.Empty;
+
     public override string ToString()
     {
         return $"Employee ID: {EmpNo}\n" +
@@ -16,6 +19,8 @@ public class EmployeeDetails : Employee
                $"Location: {LocationName}\n" +
                $"Job Title: {JobTitle}\n" +
                $"Department: {DepartmentName}\n" +
+               $"Assign Manager: {AssignManagerName}\n" +
+               $"Assign Project: {AssignProjectName}\n" +
                $"Status: {StatusName}\n";
     }
 }

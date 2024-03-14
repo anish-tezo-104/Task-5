@@ -1,4 +1,5 @@
 namespace EmployeeManagementSystem.Models;
+
 public class EmployeeFilters
 {
     public List<char>? Alphabet { get; set; }

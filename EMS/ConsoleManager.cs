@@ -13,41 +13,27 @@ public partial class EMS
         Employee employee = new();
         string empNo = GetDataFromField("Employee Number", required);
         employee.EmpNo = string.IsNullOrWhiteSpace(empNo) ? null : empNo;
-
         employee.StatusId = 1;
-
         string firstName = GetDataFromField("First Name", required);
         employee.FirstName = string.IsNullOrWhiteSpace(firstName) ? null : firstName;
-
         string lastName = GetDataFromField("Last Name");
         employee.LastName = string.IsNullOrWhiteSpace(lastName) ? null : lastName;
-
         string dob = GetDataFromField("Date of Birth (YYYY-MM-DD)", required);
         DateTime.TryParse(dob, out DateTime dobValue);
         employee.Dob = dobValue;
-
         string email = GetDataFromField("Email", required);
         employee.Email = string.IsNullOrWhiteSpace(email) ? null : email;
-
         string mobileNumber = GetDataFromField("Mobile Number");
         employee.MobileNumber = string.IsNullOrWhiteSpace(mobileNumber) ? null : mobileNumber;
-
         string joiningDate = GetDataFromField("Joining Date (YYYY-MM-DD)", required);
         DateTime.TryParse(joiningDate, out DateTime joiningDateValue);
         employee.JoiningDate = joiningDateValue;
-
         employee.LocationId = GetValidEnumInput<Location>("Location");
-
         string jobTitle = GetDataFromField("Job Title");
         employee.JobTitle = string.IsNullOrWhiteSpace(jobTitle) ? null : jobTitle;
-
         employee.DepartmentId = GetValidEnumInput<Department>("Department");
-
-        string assignManager = GetDataFromField("Assign Manager");
-        employee.AssignManager = string.IsNullOrWhiteSpace(assignManager) ? null : assignManager;
-
-        string assignProject = GetDataFromField("Assign Project");
-        employee.AssignProject = string.IsNullOrWhiteSpace(assignProject) ? null : assignProject;
+        employee.AssignManagerId = GetValidEnumInput<Project>("Assign Project");
+        employee.AssignProjectId = GetValidEnumInput<Manager>("Assign Manager");
 
         return employee;
     }
@@ -83,7 +69,7 @@ public partial class EMS
 
     public static partial EmployeeFilters? GetSearchKeywordFromConsole()
     {
-        EmployeeFilters filters = new EmployeeFilters();
+        EmployeeFilters filters = new();
 
         _logger.LogInfo("Enter the search keyword:");
         filters.Search = Console.ReadLine()?.Trim();
@@ -99,6 +85,7 @@ public partial class EMS
             Filters.Locations = [];
             Filters.Departments = [];
             Filters.Status = [];
+            Filters.Search = "";
         }
     }
 
@@ -117,7 +104,7 @@ public partial class EMS
 
             Console.WriteLine($"{employee.EmpNo}\t\t{fullName,-20}\t{employee.StatusName,-10}\t{dob}\t{email,-30}\t{mobileNumber}\t{locationName,-10}\t\t{jobTitle,-30}\t{departmentName}");
         }
-        Console.WriteLine("-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------\n");
+        Console.WriteLine("-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------\n");
     }
 
     public static partial Employee GetUpdatedDataFromUser()
@@ -150,8 +137,24 @@ public partial class EMS
         {
             employee.DepartmentId = departmentId;
         }
-        employee.AssignManager = GetDataFromField("Assign Manager")!;
-        employee.AssignProject = GetDataFromField("Assign Project")!;
+        int? assignManagerId = GetValidEnumInput<Manager>("Assign Manager");
+        if (assignManagerId == -1)
+        {
+            employee.AssignManagerId = null;
+        }
+        else
+        {
+            employee.AssignManagerId = assignManagerId;
+        }
+        int? assignProjectId = GetValidEnumInput<Project>("Assign Project");
+        if (assignProjectId == -1)
+        {
+            employee.AssignProjectId = null;
+        }
+        else
+        {
+            employee.AssignProjectId = assignProjectId;
+        }
         return employee;
     }
 
@@ -255,9 +258,9 @@ public partial class EMS
     private static void PrintEmployeesTableHeader()
     {
         Console.WriteLine("\nEmployee Details:\n");
-        Console.WriteLine("-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------");
+        Console.WriteLine("-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------");
         Console.WriteLine("Employee ID\tName\t\t\tStatus\t\tDate of Birth\tEmail\t\t\t\tMobile Number\tLocation\t\tJob Title\t\t\tDepartment");
-        Console.WriteLine("-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------");
+        Console.WriteLine("-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------");
     }
 
     private static string? GetDataFromField(string message, bool isRequired = false)

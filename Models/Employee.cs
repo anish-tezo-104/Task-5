@@ -1,4 +1,5 @@
 namespace EmployeeManagementSystem.Models;
+
 public class Employee
 {
     public string? EmpNo { get; set; } = string.Empty;
@@ -12,8 +13,8 @@ public class Employee
     public int? LocationId { get; set; }
     public string? JobTitle { get; set; } = string.Empty;
     public int? DepartmentId { get; set; }
-    public string? AssignManager { get; set; } = string.Empty;
-    public string? AssignProject { get; set; } = string.Empty;
+    public int? AssignManagerId { get; set; }
+    public int? AssignProjectId { get; set; }
 
     public override string ToString()
     {

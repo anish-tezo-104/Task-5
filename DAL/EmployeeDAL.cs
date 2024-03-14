@@ -1,6 +1,7 @@
 using EmployeeManagementSystem.Utils;
 using EmployeeManagementSystem.Models;
 namespace EmployeeManagementSystem.DAL;
+
 public class EmployeeDAL : IEmployeeDAL
 {
     private readonly string _filePath = "";
@@ -52,8 +53,8 @@ public class EmployeeDAL : IEmployeeDAL
         dbEmployee.LocationId = GetUpdatedValue(employee.LocationId, dbEmployee.LocationId);
         dbEmployee.JobTitle = GetUpdatedValue(employee.JobTitle, dbEmployee.JobTitle);
         dbEmployee.DepartmentId = GetUpdatedValue(employee.DepartmentId, dbEmployee.DepartmentId);
-        dbEmployee.AssignManager = GetUpdatedValue(employee.AssignManager, dbEmployee.AssignManager);
-        dbEmployee.AssignProject = GetUpdatedValue(employee.AssignProject, dbEmployee.AssignProject);
+        dbEmployee.AssignManagerId = GetUpdatedValue(employee.AssignManagerId, dbEmployee.AssignManagerId);
+        dbEmployee.AssignProjectId = GetUpdatedValue(employee.AssignProjectId, dbEmployee.AssignProjectId);
 
         _jsonUtils.WriteJSON(existingEmployees, _filePath);
         return true;
@@ -126,8 +127,10 @@ public class EmployeeDAL : IEmployeeDAL
             JobTitle = employee.JobTitle,
             DepartmentId = employee.DepartmentId,
             DepartmentName = employee.DepartmentId.HasValue ? ((Department)employee.DepartmentId).ToString() : null,
-            AssignManager = employee.AssignManager,
-            AssignProject = employee.AssignProject
+            AssignManagerId = employee.AssignManagerId,
+            AssignManagerName = employee.AssignManagerId.HasValue ? ((Manager)employee.AssignManagerId).ToString() : null,
+            AssignProjectId = employee.AssignProjectId,
+            AssignProjectName = employee.AssignProjectId.HasValue ? ((Project)employee.AssignProjectId).ToString() : null
         };
         return employeeDetails;
     }

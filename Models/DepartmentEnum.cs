@@ -1,4 +1,5 @@
 namespace EmployeeManagementSystem.Models;
+
 public enum Department
 {
     HR = 1,
