@@ -14,12 +14,12 @@ public class EmployeeBAL : IEmployeeBAL
         _logger = logger;
     }
 
-    public List<EmployeeDetails>? GetAllEmployees()
+    public List<EmployeeDetails>? GetAll()
     {
         List<EmployeeDetails> employees;
         try
         {
-            employees = _employeeDal.RetrieveAllEmployees();
+            employees = _employeeDal.RetrieveAll();
             if (employees == null || employees.Count == 0)
             {
                 throw new Exception("No employee(s) found.");
@@ -73,12 +73,12 @@ public class EmployeeBAL : IEmployeeBAL
         }
     }
 
-    public List<EmployeeDetails>? SearchEmployees(List<string> keywords)
+    public List<EmployeeDetails>? SearchEmployees(EmployeeFilters keyword)
     {
         List<EmployeeDetails> employees;
         try
         {
-            employees = _employeeDal.SearchOrFilter(keywords, null);
+            employees = _employeeDal.SearchOrFilter(keyword);
             if (employees == null || employees.Count == 0)
             {
                 throw new Exception("No matching employees found.");
@@ -97,7 +97,7 @@ public class EmployeeBAL : IEmployeeBAL
         List<EmployeeDetails> employees;
         try
         {
-            employees = _employeeDal.SearchOrFilter(null, filters);
+            employees = _employeeDal.SearchOrFilter(filters);
             if (employees == null || employees.Count == 0)
             {
                 throw new Exception("No matching employees found.");

@@ -4,10 +4,10 @@ namespace EmployeeManagementSystem.DAL;
 public interface IEmployeeDAL
 {
     public bool Insert(Employee employee);
-    public List<EmployeeDetails>? RetrieveAllEmployees();
+    public List<EmployeeDetails>? RetrieveAll();
     public bool Update(string empNo, Employee updatedEmployee);
     public bool Delete(string empNo);
-    public List<EmployeeDetails>? SearchOrFilter(List<string>? keywords = null, EmployeeFilters? filters = null);
+    public List<EmployeeDetails>? SearchOrFilter(EmployeeFilters? filters);
     public int Count();
 }
 

@@ -24,6 +24,8 @@ public partial class EMS
 
     public static partial EmployeeFilters? GetEmployeeFiltersFromConsole();
 
+    public static partial EmployeeFilters? GetSearchKeywordFromConsole();
+
     public static partial Employee GetUpdatedDataFromUser();
 
     internal static string EmployeeFilePath = GetIConfiguration()["environmentVariables:EMPLOYEE__JSON__PATH"];
@@ -42,65 +44,9 @@ public partial class EMS
         return HandleCommandArgs(args, rootCommand);
     }
 
-    private static int HandleCommandArgs(string[] args, RootCommand rootCommand)
-    {
-        var addCommand = new Command("--add", "Add a new employee")
-        {
-            Handler = CommandHandler.Create(() => AddEmployee())
-        };
-        var showCommand = new Command("--show", "Show employees list")
-        {
-            Handler = CommandHandler.Create(() => GetAllEmployees())
-        };
-        var filterCommand = new Command("--filter", "Filter employees list")
-        {
-            Handler = CommandHandler.Create(() => FilterEmployees())
-        };
-        var deleteCommand = new Command("--delete", "Delete an employee [Input : Employee Number]")
-        {
-            new Argument<string>("empNo", "EmployeeNumber")
-        };
-        deleteCommand.Handler = CommandHandler.Create((string empNo) => DeleteEmployee(empNo));
-
-        var updateCommand = new Command("--update", "Update an employee detail"){
-            new Argument<string>("empNo", "EmployeeNumber")
-        };
-        updateCommand.Handler = CommandHandler.Create((string empNo) => UpdateEmployee(empNo));
-
-        var searchCommand = new Command("--search", "Search an employee details")
-        {
-            new Argument<List<string>>("keywords", "Employee Number, Name, Date of Birth, Location, etc.")
-            {
-                Arity = ArgumentArity.OneOrMore
-            }
-        };
-        searchCommand.Handler = CommandHandler.Create((List<string> keywords) => SearchEmployee(keywords));
-
-        var countEmployees = new Command("--count", "Count of employees")
-        {
-            Handler = CommandHandler.Create(() => CountEmployees())
-        };
-
-        rootCommand.AddOption(new Option<string>("-o", "Display all operations"));
-        rootCommand.AddCommand(addCommand);
-        rootCommand.AddCommand(showCommand);
-        rootCommand.AddCommand(deleteCommand);
-        rootCommand.AddCommand(updateCommand);
-        rootCommand.AddCommand(searchCommand);
-        rootCommand.AddCommand(filterCommand);
-        rootCommand.AddCommand(countEmployees);
-
-        if (args.Length == 1 && (args[0] == "-o" || args[0] == "-options"))
-        {
-            DisplayAvailableCommands(rootCommand);
-            return 0;
-        }
-        return rootCommand.Invoke(args);
-    }
-
     public static void DisplayAvailableCommands(RootCommand rootCommand)
     {
-        Console.WriteLine("\nAvailable Commands:");
+        _logger.LogInfo("\nAvailable Commands:");
         foreach (var command in rootCommand.Children)
         {
             if (command.Name != "o")
@@ -133,7 +79,7 @@ public partial class EMS
     {
         try
         {
-            List<EmployeeDetails> employees = _employeeBal.GetAllEmployees();
+            List<EmployeeDetails> employees = _employeeBal.GetAll();
             if (employees != null && employees.Count > 0)
             {
                 _logger.LogSuccess($"Found {employees.Count} employees : \n");
@@ -168,16 +114,18 @@ public partial class EMS
 
     public static void UpdateEmployee(string empNo)
     {
-        List<EmployeeDetails> employees = new List<EmployeeDetails>();
+        List<EmployeeDetails> employees = [];
         try
         {
-            employees = _employeeBal.SearchEmployees(new List<string> { empNo });
+            var filters = new EmployeeFilters { Search = empNo };
+            employees = _employeeBal.SearchEmployees(filters);
         }
         catch (Exception)
         {
             _logger.LogError("Error occurred while searching for employees. Please try again!");
+            return;
         }
-        
+
         if (employees == null || employees.Count == 0)
         {
             _logger.LogSuccess("No employee found with the provided employee number.");
@@ -185,15 +133,14 @@ public partial class EMS
         }
 
         PrintEmployeesDetails(employees);
-        Console.WriteLine("\nPress 'Enter' to keep the original value.\n");
+        _logger.LogInfo("\nPress 'Enter' to keep the original value.\n");
         Employee updatedEmployee = GetUpdatedDataFromUser();
-
         try
         {
             bool status = _employeeBal.UpdateEmployee(empNo, updatedEmployee);
             if (status)
             {
-                Console.WriteLine("Employee data updated successfully.");
+                _logger.LogSuccess("Employee data updated successfully.");
             }
             else
             {
@@ -206,17 +153,17 @@ public partial class EMS
         }
     }
 
-    public static void SearchEmployee(List<string> keywords)
+    public static void SearchEmployee()
     {
-        if (keywords == null || keywords.Count == 0)
+        EmployeeFilters? keyword = GetSearchKeywordFromConsole();
+        if (keyword == null)
         {
-            _logger.LogError("No keywords provided for search.");
+            _logger.LogError("No keyword provided for search.");
             return;
         }
-
         try
         {
-            List<EmployeeDetails> employees = _employeeBal.SearchEmployees(keywords);
+            List<EmployeeDetails> employees = _employeeBal.SearchEmployees(keyword);
             if (employees != null && employees.Count > 0)
             {
                 _logger.LogSuccess($"Found {employees.Count} employees.");
@@ -258,4 +205,55 @@ public partial class EMS
         _logger.LogSuccess($"Total Employees: {count}");
     }
 
+    private static int HandleCommandArgs(string[] args, RootCommand rootCommand)
+    {
+        var addCommand = new Command("--add", "Add a new employee")
+        {
+            Handler = CommandHandler.Create(() => AddEmployee())
+        };
+        var showCommand = new Command("--show", "Show employees list")
+        {
+            Handler = CommandHandler.Create(() => GetAllEmployees())
+        };
+        var filterCommand = new Command("--filter", "Filter employees list")
+        {
+            Handler = CommandHandler.Create(() => FilterEmployees())
+        };
+        var deleteCommand = new Command("--delete", "Delete an employee [Input : Employee Number]")
+        {
+            new Argument<string>("empNo", "EmployeeNumber")
+        };
+        deleteCommand.Handler = CommandHandler.Create((string empNo) => DeleteEmployee(empNo));
+
+        var updateCommand = new Command("--update", "Update an employee detail"){
+            new Argument<string>("empNo", "EmployeeNumber")
+        };
+        updateCommand.Handler = CommandHandler.Create((string empNo) => UpdateEmployee(empNo));
+
+        var searchCommand = new Command("--search", "Search an employee details")
+        {
+            Handler = CommandHandler.Create(() => SearchEmployee())
+        };
+
+        var countEmployees = new Command("--count", "Count of employees")
+        {
+            Handler = CommandHandler.Create(() => CountEmployees())
+        };
+
+        rootCommand.AddOption(new Option<string>("-o", "Display all operations"));
+        rootCommand.AddCommand(addCommand);
+        rootCommand.AddCommand(showCommand);
+        rootCommand.AddCommand(deleteCommand);
+        rootCommand.AddCommand(updateCommand);
+        rootCommand.AddCommand(searchCommand);
+        rootCommand.AddCommand(filterCommand);
+        rootCommand.AddCommand(countEmployees);
+
+        if (args.Length == 1 && (args[0] == "-o" || args[0] == "-options"))
+        {
+            DisplayAvailableCommands(rootCommand);
+            return 0;
+        }
+        return rootCommand.Invoke(args);
+    }
 }

@@ -65,18 +65,28 @@ public partial class EMS
         var locationResult = ValidateFiltersWithEnum<Location>("Location");
         if (locationResult.isValid)
         {
-            filters.Locations = locationResult.enumValue;
+            filters.Locations = locationResult.ToTuple().Item2;
         }
         var departmentResult = ValidateFiltersWithEnum<Department>("Department");
         if (departmentResult.isValid)
         {
-            filters.Departments = departmentResult.enumValue;
+            filters.Departments = departmentResult.ToTuple().Item2;
         }
         var statusResult = ValidateFiltersWithEnum<Status>("Status");
         if (statusResult.isValid)
         {
-            filters.Status = statusResult.enumValue;
+            filters.Status = statusResult.ToTuple().Item2;
         }
+
+        return filters;
+    }
+
+    public static partial EmployeeFilters? GetSearchKeywordFromConsole()
+    {
+        EmployeeFilters filters = new EmployeeFilters();
+
+        _logger.LogInfo("Enter the search keyword:");
+        filters.Search = Console.ReadLine()?.Trim();
 
         return filters;
     }
@@ -112,13 +122,15 @@ public partial class EMS
 
     public static partial Employee GetUpdatedDataFromUser()
     {
-        Employee employee = new();
-        employee.FirstName = GetDataFromField("First Name")!;
-        employee.LastName = GetDataFromField("Last Name")!;
-        employee.Dob = ParseNullableDate(GetDataFromField("Date of Birth (YYYY-MM-DD)"));
-        employee.Email = GetDataFromField("Email")!;
-        employee.MobileNumber = GetDataFromField("Mobile Number")!;
-        employee.JoiningDate = ParseNullableDate(GetDataFromField("Joining Date (YYYY-MM-DD)"));
+        Employee employee = new()
+        {
+            FirstName = GetDataFromField("First Name")!,
+            LastName = GetDataFromField("Last Name")!,
+            Dob = ParseNullableDate(GetDataFromField("Date of Birth (YYYY-MM-DD)")),
+            Email = GetDataFromField("Email")!,
+            MobileNumber = GetDataFromField("Mobile Number")!,
+            JoiningDate = ParseNullableDate(GetDataFromField("Joining Date (YYYY-MM-DD)"))
+        };
         int? locationId = GetValidEnumInput<Location>("Location");
         if (locationId == -1)
         {
@@ -173,7 +185,7 @@ public partial class EMS
 
     private static int? GetValidEnumInput<TEnum>(string fieldName) where TEnum : struct, Enum
     {
-        (bool isValid, List<TEnum> enumValues) result;
+        (bool isValid, List<int> enumIds) result;
         do
         {
             string input = GetDataFromField(fieldName)?.Replace(" ", "");
@@ -196,20 +208,20 @@ public partial class EMS
             }
         } while (!result.isValid);
 
-        return result.isValid && result.enumValues.Count > 0 ? Convert.ToInt32(result.enumValues[0]) : null;
+        return result.isValid && result.enumIds.Count > 0 ? result.enumIds[0] : null;
     }
 
-    private static (bool isValid, List<TEnum> enumValue) ValidateFiltersWithEnum<TEnum>(string fieldName) where TEnum : struct, Enum
+    private static (bool isValid, List<int> enumIds) ValidateFiltersWithEnum<TEnum>(string fieldName) where TEnum : struct, Enum
     {
         string input;
-        (bool isValid, List<TEnum> enumValue) result;
+        (bool isValid, List<int> enumIds) result;
         do
         {
-            input = GetDataFromField(fieldName);
+            input = GetDataFromField(fieldName)?.Trim();
 
             if (string.IsNullOrWhiteSpace(input))
             {
-                return (true, new List<TEnum>());
+                return (true, new List<int>());
             }
 
             result = EnumCheck<TEnum>(input);
@@ -222,22 +234,22 @@ public partial class EMS
         return result;
     }
 
-    private static (bool success, List<TEnum> enumValues) EnumCheck<TEnum>(string input) where TEnum : struct, Enum
+    private static (bool success, List<int> enumIds) EnumCheck<TEnum>(string input) where TEnum : struct, Enum
     {
-        List<TEnum> enumValues = new List<TEnum>();
+        List<int> enumIds = [];
         string[] values = input.Split(',').Select(x => x.Trim()).ToArray();
         foreach (var value in values)
         {
             if (Enum.TryParse(value, true, out TEnum result))
             {
-                enumValues.Add(result);
+                enumIds.Add(Convert.ToInt32(result)); // Convert the enum value to its corresponding ID
             }
             else
             {
-                return (false, []);
+                return (false, new List<int>());
             }
         }
-        return (true, enumValues);
+        return (true, enumIds);
     }
 
     private static void PrintEmployeesTableHeader()

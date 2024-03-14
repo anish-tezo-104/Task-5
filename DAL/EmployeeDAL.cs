@@ -22,7 +22,7 @@ public class EmployeeDAL : IEmployeeDAL
         return true;
     }
 
-    public List<EmployeeDetails>? RetrieveAllEmployees()
+    public List<EmployeeDetails>? RetrieveAll()
     {
         List<Employee> existingEmployees = _jsonUtils.ReadJSON<Employee>(_filePath);
         if (existingEmployees == null || existingEmployees.Count == 0)
@@ -76,66 +76,23 @@ public class EmployeeDAL : IEmployeeDAL
         }
     }
 
-    public List<EmployeeDetails>? SearchOrFilter(List<string>? keywords = null, EmployeeFilters? filters = null)
+    public List<EmployeeDetails>? SearchOrFilter(EmployeeFilters? filters)
     {
         List<Employee> employees = _jsonUtils.ReadJSON<Employee>(_filePath);
 
         List<EmployeeDetails> employeeDetailsList = employees.Select(ConvertToEmployeeDetails).ToList();
 
-        // Search logic
-        if (keywords != null && keywords.Count > 0)
-        {
-            List<EmployeeDetails> foundEmployees = employeeDetailsList
-                .Where(employee =>
-                    keywords.Any(kw =>
-                        EmployeeContainsSearchTerm(employee, kw)
-                    )
-                ).ToList();
-
-            if (foundEmployees.Count == 0)
-            {
-                throw new Exception("No employees found.");
-            }
-
-            return foundEmployees;
-        }
-
-        // Filter logic
         if (filters != null)
         {
-            if (filters.Alphabet != null && filters.Alphabet.Count != 0)
+            // Apply filters
+            employeeDetailsList = ApplyFilter(employeeDetailsList, filters);
+
+            // Apply search
+            if (filters.Search != null)
             {
-                employeeDetailsList = employeeDetailsList
-                    .Where(e =>
-                        e.FirstName != null && filters.Alphabet.Contains(char.ToLower(e.FirstName[0])))
-                    .ToList();
-            }
-            if (filters.Locations != null && filters.Locations.Count != 0)
-            {
-                employeeDetailsList = employeeDetailsList
-                    .Where(e =>
-                        e.LocationName != null && filters.Locations
-                            .Any(location => location.ToString().Equals(e.LocationName, StringComparison.OrdinalIgnoreCase)))
-                    .ToList();
-            }
-            if (filters.Departments != null && filters.Departments.Count != 0)
-            {
-                employeeDetailsList = employeeDetailsList
-                    .Where(e =>
-                        e.DepartmentName != null && filters.Departments
-                            .Any(department => department.ToString().Equals(e.DepartmentName, StringComparison.OrdinalIgnoreCase)))
-                    .ToList();
-            }
-            if (filters.Status != null && filters.Status.Count != 0)
-            {
-                employeeDetailsList = employeeDetailsList
-                    .Where(e =>
-                        e.StatusName != null && filters.Status
-                            .Any(status => status.ToString().Equals(e.StatusName, StringComparison.OrdinalIgnoreCase)))
-                    .ToList();
+                employeeDetailsList = ApplySearch(employeeDetailsList, filters.Search);
             }
         }
-
         if (employeeDetailsList.Count == 0)
         {
             throw new Exception("No employees found.");
@@ -148,20 +105,6 @@ public class EmployeeDAL : IEmployeeDAL
         List<Employee> existingEmployees = _jsonUtils.ReadJSON<Employee>(_filePath);
         int count = existingEmployees.Count;
         return count;
-    }
-
-    private static bool EmployeeContainsSearchTerm(EmployeeDetails employee, string searchTerm)
-    {
-        return (employee.EmpNo != null && employee.EmpNo.Contains(searchTerm, StringComparison.OrdinalIgnoreCase)) ||
-               (employee.FirstName != null && employee.FirstName.Contains(searchTerm, StringComparison.OrdinalIgnoreCase)) ||
-               (employee.LastName != null && employee.LastName.Contains(searchTerm, StringComparison.OrdinalIgnoreCase)) ||
-               (employee.Email != null && employee.Email.Contains(searchTerm, StringComparison.OrdinalIgnoreCase)) ||
-               (employee.MobileNumber != null && employee.MobileNumber.Contains(searchTerm, StringComparison.OrdinalIgnoreCase)) ||
-                (employee.LocationName != null && employee.LocationName.Contains(searchTerm, StringComparison.OrdinalIgnoreCase)) ||
-               (employee.JobTitle != null && employee.JobTitle.Contains(searchTerm, StringComparison.OrdinalIgnoreCase)) ||
-               (employee.DepartmentName != null && employee.DepartmentName.Contains(searchTerm, StringComparison.OrdinalIgnoreCase)) ||
-               (employee.AssignManager != null && employee.AssignManager.Contains(searchTerm, StringComparison.OrdinalIgnoreCase)) ||
-               (employee.AssignProject != null && employee.AssignProject.Contains(searchTerm, StringComparison.OrdinalIgnoreCase));
     }
 
     private static EmployeeDetails ConvertToEmployeeDetails(Employee employee)
@@ -189,8 +132,58 @@ public class EmployeeDAL : IEmployeeDAL
         return employeeDetails;
     }
 
+    private static List<EmployeeDetails> ApplyFilter(List<EmployeeDetails> employees, EmployeeFilters filters)
+    {
+        List<Func<EmployeeDetails, bool>> filterConditions = new List<Func<EmployeeDetails, bool>>();
+
+        if (filters.Alphabet != null && filters.Alphabet.Count != 0)
+        {
+            filterConditions.Add(e => e.FirstName != null && filters.Alphabet.Contains(char.ToLower(e.FirstName[0])));
+        }
+
+        if (filters.Locations != null && filters.Locations.Count != 0)
+        {
+            filterConditions.Add(e => e.LocationId.HasValue && filters.Locations.Contains(e.LocationId.Value));
+        }
+
+        if (filters.Departments != null && filters.Departments.Count != 0)
+        {
+            filterConditions.Add(e => e.DepartmentId.HasValue && filters.Departments.Contains(e.DepartmentId.Value));
+        }
+
+        if (filters.Status != null && filters.Status.Count != 0)
+        {
+            filterConditions.Add(e => filters.Status.Contains(e.StatusId));
+        }
+
+        return employees.Where(e => filterConditions.All(condition => condition(e))).ToList();
+    }
+
+    private static List<EmployeeDetails> ApplySearch(List<EmployeeDetails> employees, string searchKeyword)
+    {
+        if (string.IsNullOrWhiteSpace(searchKeyword))
+        {
+            return employees;
+        }
+
+        string keyword = searchKeyword.ToLower();
+        return employees.Where(e =>
+            e.EmpNo?.Contains(keyword, StringComparison.CurrentCultureIgnoreCase) == true ||
+            e.Email?.Contains(keyword, StringComparison.CurrentCultureIgnoreCase) == true ||
+            e.FirstName?.Contains(keyword, StringComparison.CurrentCultureIgnoreCase) == true ||
+            e.LastName?.Contains(keyword, StringComparison.CurrentCultureIgnoreCase) == true ||
+            e.LocationName?.Contains(keyword, StringComparison.CurrentCultureIgnoreCase) == true ||
+            e.DepartmentName?.Contains(keyword, StringComparison.CurrentCultureIgnoreCase) == true ||
+            e.StatusName?.Contains(keyword, StringComparison.CurrentCultureIgnoreCase) == true).ToList();
+    }
+
     private static T? GetUpdatedValue<T>(T? newValue, T? oldValue)
     {
-        return newValue?.Equals(default(T)) == true ? oldValue : newValue;
+        if (newValue == null || (newValue is string && string.IsNullOrEmpty((string)(object)newValue)))
+        {
+            return oldValue;
+        }
+        return newValue;
     }
+
 }
