@@ -1,6 +1,7 @@
 using System.Text.Json;
 
 namespace EmployeeManagementSystem.Utils;
+
 public class JSONUtils
 {
     public List<T> ReadJSON<T>(string filePath)
@@ -38,5 +39,4 @@ public class JSONUtils
             throw new IOException($"Error writing to file '{filePath}': {e.Message}", e);
         }
     }
-
 }

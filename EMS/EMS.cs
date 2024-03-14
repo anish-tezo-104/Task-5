@@ -7,12 +7,13 @@ using EmployeeManagementSystem.BAL;
 using EmployeeManagementSystem.Models;
 
 namespace EmployeeManagementSystem;
+
 public partial class EMS
 {
-    private readonly static IEmployeeDAL employeeDal;
-    private readonly static IEmployeeBAL employeeBal;
+    private readonly static IEmployeeDAL _employeeDal;
+    private readonly static IEmployeeBAL _employeeBal;
     internal static JSONUtils jsonUtils;
-    private static ILogger logger;
+    private static readonly ILogger _logger;
 
     //Defining functions present in partial class
     public static partial Employee GetEmployeeDataFromUser();
@@ -21,7 +22,7 @@ public partial class EMS
 
     public static partial IConfiguration GetIConfiguration();
 
-    public static partial (bool status, EmployeeFilters?) GetEmployeeFiltersFromConsole();
+    public static partial EmployeeFilters? GetEmployeeFiltersFromConsole();
 
     public static partial Employee GetUpdatedDataFromUser();
 
@@ -30,9 +31,9 @@ public partial class EMS
     static EMS()
     {
         jsonUtils = new JSONUtils();
-        logger = new ConsoleLogger();
-        employeeDal = new EmployeeDAL(logger, jsonUtils, EmployeeFilePath);
-        employeeBal = new EmployeeBAL(logger, employeeDal);
+        _logger = new ConsoleLogger();
+        _employeeDal = new EmployeeDAL(_logger, jsonUtils, EmployeeFilePath);
+        _employeeBal = new EmployeeBAL(_logger, _employeeDal);
     }
 
     public static int Main(string[] args)
@@ -104,7 +105,7 @@ public partial class EMS
         {
             if (command.Name != "o")
             {
-                logger.LogInfo($"{command.Name}: {command.Description}");
+                _logger.LogInfo($"{command.Name}: {command.Description}");
             }
         }
     }
@@ -112,33 +113,37 @@ public partial class EMS
     public static void AddEmployee()
     {
         Employee employee = GetEmployeeDataFromUser();
-        if(employee == null)
+        if (employee == null)
         {
-            logger.LogError("Error retrieving employee data from console.");
+            _logger.LogError("Error retrieving employee data from console.");
             return;
         }
-        bool status = employeeBal.AddEmployee(employee);
+        bool status = _employeeBal.AddEmployee(employee);
         if (status)
         {
-            logger.LogSuccess("Employee added successfully.");
+            _logger.LogSuccess("Employee added successfully.");
         }
         else
         {
-            logger.LogError("Some error occur while adding employee. Please try again!");
+            _logger.LogError("Some error occur while adding employee. Please try again!");
         }
     }
 
     public static void GetAllEmployees()
     {
-        (List<EmployeeDetails> employees, bool status) = employeeBal.GetAllEmployees();
-        if (status && employees != null)
+        try
         {
-            logger.LogSuccess($"Found {employees.Count} employees : \n");
-            PrintEmployeesDetails(employees);
+            List<EmployeeDetails> employees = _employeeBal.GetAllEmployees();
+            if (employees != null && employees.Count > 0)
+            {
+                _logger.LogSuccess($"Found {employees.Count} employees : \n");
+                PrintEmployeesDetails(employees);
+            }
         }
-        else if (!status)
+        catch (Exception ex)
         {
-            logger.LogError("Something Went Wrong. Please try again!");
+
+            _logger.LogError($"Error while retrieving employees: {ex.Message}");
         }
     }
 
@@ -146,42 +151,58 @@ public partial class EMS
     {
         if (empNo == null)
         {
-            logger.LogError("Please provide the employee number.");
+            _logger.LogError("Please provide the employee number.");
             return;
         }
-        bool status = employeeBal.DeleteEmployees(empNo);
-        if (!status)
+        bool status = _employeeBal.DeleteEmployees(empNo);
+        if (status)
         {
-            logger.LogError("Some error occur while deleting employee. Please try again!");
+            _logger.LogSuccess("Employee deleted successfully.");
+
+        }
+        else
+        {
+            _logger.LogError("Some error occur while deleting employee. Please try again!");
         }
     }
 
     public static void UpdateEmployee(string empNo)
     {
-        bool status;
-        (List<EmployeeDetails> employees, status) = employeeBal.SearchEmployees([empNo]);
-        if (status && employees != null && employees.Count > 0)
+        List<EmployeeDetails> employees = new List<EmployeeDetails>();
+        try
         {
-            PrintEmployeesDetails(employees);
+            employees = _employeeBal.SearchEmployees(new List<string> { empNo });
         }
-        else if (!status)
+        catch (Exception)
         {
-            logger.LogError("Something went wrong. Please try again!");
-            return;
+            _logger.LogError("Error occurred while searching for employees. Please try again!");
         }
-
+        
         if (employees == null || employees.Count == 0)
         {
+            _logger.LogSuccess("No employee found with the provided employee number.");
             return;
         }
 
-        logger.LogInfo("\nPress 'Enter' to keep the original value.\n");
+        PrintEmployeesDetails(employees);
+        Console.WriteLine("\nPress 'Enter' to keep the original value.\n");
         Employee updatedEmployee = GetUpdatedDataFromUser();
 
-        status = employeeBal.UpdateEmployee(updatedEmployee, empNo);
-        if (!status)
+        try
         {
-            logger.LogError("Some error occur while updating employee data. Please try again");
+            bool status = _employeeBal.UpdateEmployee(empNo, updatedEmployee);
+            if (status)
+            {
+                Console.WriteLine("Employee data updated successfully.");
+            }
+            else
+            {
+                _logger.LogError("Error occurred while updating employee data.");
+            }
+        }
+        catch (Exception)
+        {
+            _logger.LogError("Error occurred while updating employee data.");
         }
     }
 
@@ -189,59 +210,52 @@ public partial class EMS
     {
         if (keywords == null || keywords.Count == 0)
         {
-            logger.LogError("No keywords provided for search.");
+            _logger.LogError("No keywords provided for search.");
             return;
         }
 
-        (List<EmployeeDetails> employees, bool status) = employeeBal.SearchEmployees(keywords);
-        if (status && employees != null)
+        try
         {
-            PrintEmployeesDetails(employees);
+            List<EmployeeDetails> employees = _employeeBal.SearchEmployees(keywords);
+            if (employees != null && employees.Count > 0)
+            {
+                _logger.LogSuccess($"Found {employees.Count} employees.");
+                PrintEmployeesDetails(employees);
+            }
         }
-        else if (!status)
+        catch (Exception ex)
         {
-            logger.LogError("Some error occur while searching employees. Please try again!");
+            _logger.LogError($"Error while searching employees: {ex.Message}");
         }
     }
 
     public static void FilterEmployees()
     {
-        (bool status, EmployeeFilters? filters) = GetEmployeeFiltersFromConsole();
-        if (!status)
+        EmployeeFilters? filters = GetEmployeeFiltersFromConsole();
+        if (filters == null)
         {
-            logger.LogError("Error retrieving employee filters from console.");
-            if (filters != null)
-            {
-                ResetFilters(filters);
-            }
+            _logger.LogError("Error retrieving employee filters from console.");
             return;
         }
-
-        if (filters != null)
+        try
         {
-            (List<EmployeeDetails> employees, bool filterStatus) = employeeBal.FilterEmployees(filters);
-            if (filterStatus && employees != null && employees.Count > 0)
+            List<EmployeeDetails> employees = _employeeBal.FilterEmployees(filters);
+            if (employees != null && employees.Count > 0)
             {
                 PrintEmployeesDetails(employees);
             }
-            else if (!filterStatus)
-            {
-                logger.LogError("Some error occur while filtering employees. Please try again!");
-                ResetFilters(filters);
-                return;
-            }
-            ResetFilters(filters);
         }
-        else
+        catch (Exception ex)
         {
-            logger.LogError("Error filtering employees.");
+            _logger.LogError($"Some error occur while filtering employees: {ex.Message}");
         }
+        ResetFilters(filters);
     }
 
     public static void CountEmployees()
     {
-        int count = employeeBal.CountEmployees();
-        logger.LogSuccess($"Total Employees: {count}");
+        int count = _employeeBal.CountEmployees();
+        _logger.LogSuccess($"Total Employees: {count}");
     }
 
 }

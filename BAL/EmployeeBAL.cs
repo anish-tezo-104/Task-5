@@ -5,32 +5,31 @@ namespace EmployeeManagementSystem.BAL;
 
 public class EmployeeBAL : IEmployeeBAL
 {
-    public readonly IEmployeeDAL employeeDal;
-    public readonly ILogger logger;
+    private readonly IEmployeeDAL _employeeDal;
+    public readonly ILogger _logger;
 
     public EmployeeBAL(ILogger logger, IEmployeeDAL employeeDal)
     {
-        this.employeeDal = employeeDal;
-        this.logger = logger;
+        _employeeDal = employeeDal;
+        _logger = logger;
     }
-    public (List<EmployeeDetails>? employees, bool status) GetAllEmployees()
+
+    public List<EmployeeDetails>? GetAllEmployees()
     {
-        bool status;
-        List<EmployeeDetails> employees = new List<EmployeeDetails>();
+        List<EmployeeDetails> employees;
         try
         {
-            (employees, status) = employeeDal.RetrieveAllEmployees();
-            if (!status && (employees == null || employees.Count == 0))
+            employees = _employeeDal.RetrieveAllEmployees();
+            if (employees == null || employees.Count == 0)
             {
-                logger.LogError("No Employee(s) Found");
-                return (null, true);
+                throw new Exception("No employee(s) found.");
             }
         }
         catch (Exception)
         {
-            status = false;
+            throw;
         }
-        return (employees, status);
+        return employees;
     }
 
     public bool AddEmployee(Employee employee)
@@ -38,7 +37,7 @@ public class EmployeeBAL : IEmployeeBAL
         bool status;
         try
         {
-            status = employeeDal.Insert(employee);
+            status = _employeeDal.Insert(employee);
         }
         catch (Exception)
         {
@@ -52,97 +51,69 @@ public class EmployeeBAL : IEmployeeBAL
         bool status;
         try
         {
-            status = employeeDal.Delete(empNo);
-            if (status)
-            {
-                logger.LogSuccess("Employee deleted successfully.");
-            }
-            else
-            {
-                logger.LogError("Employee not found. Unable to delete.");
-            }
-            status = true;
+            status = _employeeDal.Delete(empNo);
         }
         catch (Exception)
         {
-
             status = false;
         }
 
         return status;
     }
 
-    public bool UpdateEmployee(Employee updatedEmployee, string empNo)
+    public bool UpdateEmployee(string empNo, Employee employee)
     {
-        bool status;
         try
         {
-            status = employeeDal.Update(updatedEmployee, empNo);
-            if (status)
-            {
-                logger.LogSuccess("Employee data updated successfully.");
-            }
+            return _employeeDal.Update(empNo, employee);
         }
-        catch (Exception)
+        catch (Exception ex)
         {
-            status = false;
+            throw new Exception("Error occurred while updating employee data.", ex);
         }
-        return status;
     }
 
-    public (List<EmployeeDetails>? employees, bool status) SearchEmployees(List<string> keywords)
+    public List<EmployeeDetails>? SearchEmployees(List<string> keywords)
     {
-        bool status;
-        List<EmployeeDetails> employees = new List<EmployeeDetails>();
+        List<EmployeeDetails> employees;
         try
         {
-            (employees, status) = employeeDal.SearchOrFilter(keywords, null);
-            if (status && employees != null)
+            employees = _employeeDal.SearchOrFilter(keywords, null);
+            if (employees == null || employees.Count == 0)
             {
-                logger.LogSuccess($"Found {employees.Count} employees.");
+                throw new Exception("No matching employees found.");
             }
-            else
-            {
-                logger.LogSuccess("No employee(s) Found");
-            }
-            status = true;
         }
         catch (Exception)
         {
-            status = false;
+            throw;
         }
 
-        return (employees, status);
+        return employees;
     }
 
-    public (List<EmployeeDetails>? employees, bool status) FilterEmployees(EmployeeFilters filters)
+    public List<EmployeeDetails>? FilterEmployees(EmployeeFilters filters)
     {
-        bool status;
-        List<EmployeeDetails> employees = new List<EmployeeDetails>();
+        List<EmployeeDetails> employees;
         try
         {
-            (employees, status) = employeeDal.SearchOrFilter(null, filters);
-            if (status && employees != null)
+            employees = _employeeDal.SearchOrFilter(null, filters);
+            if (employees == null || employees.Count == 0)
             {
-                logger.LogSuccess($"Filtering completed successfully.\nFound {employees.Count} matching employees.\n");
+                throw new Exception("No matching employees found.");
             }
-            else
-            {
-                logger.LogSuccess("Filtering completed successfully.\nNo matching employees found.\n");
-            }
-            status = true;
         }
         catch (Exception)
         {
-            status = false;
+            throw;
         }
 
-        return (employees, status);
+        return employees;
     }
 
     public int CountEmployees()
     {
-        return employeeDal.Count();
+        return _employeeDal.Count();
     }
 }
 
