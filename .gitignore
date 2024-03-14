@@ -1,3 +1,4 @@
-# Ignore bin and obj folders
+# Visual Studio files
+.vs/
 bin/
 obj/
