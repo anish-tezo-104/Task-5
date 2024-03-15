@@ -4,6 +4,7 @@ using System.Globalization;
 
 namespace EmployeeManagementSystem;
 
+public delegate bool IsEmpNoDuplicate(string empNo);
 public partial class EMS
 {
     public static partial Employee GetEmployeeDataFromUser()

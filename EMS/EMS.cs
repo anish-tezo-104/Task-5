@@ -27,7 +27,7 @@ public partial class EMS
     {
         _jsonUtils = new JSONUtils();
         _logger = new ConsoleLogger();
-        _employeeJsonPath = GetIConfiguration()["EmployeeJsonPath"];
+        _employeeJsonPath = GetIConfiguration()["EmployeesJsonPath"];
         _employeeDal = new EmployeeDAL(_logger, _jsonUtils, _employeeJsonPath);
         _employeeBal = new EmployeeBAL(_logger, _employeeDal);
     }
