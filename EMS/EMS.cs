@@ -207,10 +207,14 @@ public partial class EMS
         try
         {
             List<EmployeeDetails> employees = _employeeBal.SearchEmployees(keyword);
-            if (employees != null && employees.Count > 0)
+            if (employees != null )
             {
-                _logger.LogSuccess($"{employees.Count} {Constants.SearchEmployeeSuccess}");
-                PrintEmployeesDetails(employees);
+                _logger.LogSuccess($"{Constants.FilterEmployeesSuccess} {employees.Count}");
+                if(employees.Count > 0)
+                {
+                    PrintEmployeesDetails(employees);
+                }
+                
             }
         }
         catch (Exception)
@@ -230,10 +234,14 @@ public partial class EMS
         try
         {
             List<EmployeeDetails> employees = _employeeBal.FilterEmployees(filters);
-            if (employees != null && employees.Count > 0)
+            if (employees != null )
             {
-                _logger.LogSuccess(Constants.FilterEmployeesSuccess);
-                PrintEmployeesDetails(employees);
+                _logger.LogSuccess($"{Constants.FilterEmployeesSuccess} {employees.Count}");
+                if(employees.Count > 0)
+                {
+                    PrintEmployeesDetails(employees);
+                }
+                
             }
         }
         catch (Exception)

@@ -75,10 +75,6 @@ public class EmployeeBAL : IEmployeeBAL
         try
         {
             employees = _employeeDal.Filter(keyword);
-            if (employees == null || employees.Count == 0)
-            {
-                throw new Exception("No matching employees found.");
-            }
         }
         catch (Exception)
         {
@@ -94,10 +90,6 @@ public class EmployeeBAL : IEmployeeBAL
         try
         {
             employees = _employeeDal.Filter(filters);
-            if (employees == null || employees.Count == 0)
-            {
-                throw new Exception("No matching employees found.");
-            }
         }
         catch (Exception)
         {

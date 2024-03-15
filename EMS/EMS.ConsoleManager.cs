@@ -180,21 +180,26 @@ public partial class EMS
     private static bool ValidateFiltersWithEnum<TEnum>(string fieldName, out List<int> enumIds) where TEnum : struct, Enum
     {
         string input;
-        enumIds = [];
+        enumIds = new List<int>();
+        bool isValidInput = false; // Add a flag to track valid input
         do
         {
             input = GetDataFromField(fieldName)?.Trim();
 
             if (string.IsNullOrWhiteSpace(input))
             {
-                return true;
+                return true; // Return true if input is empty or null
             }
 
-            if (!EnumCheck<TEnum>(input, out enumIds))
+            if (EnumCheck<TEnum>(input, out enumIds))
+            {
+                isValidInput = true; // Set the flag to true if input is valid
+            }
+            else
             {
                 _logger.LogError($"Invalid value. Please enter a valid {fieldName}.");
             }
-        } while (enumIds.Count == 0);
+        } while (!isValidInput); // Continue looping until valid input is provided
 
         return true;
     }

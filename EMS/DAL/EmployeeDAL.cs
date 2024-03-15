@@ -95,7 +95,7 @@ public class EmployeeDAL : IEmployeeDAL
         }
         if (employeeDetailsList.Count == 0)
         {
-            throw new Exception("No employees found.");
+            return [];
         }
         return employeeDetailsList;
     }
