@@ -122,7 +122,6 @@ public partial class EMS
 
         PrintEmployeesDetails(employees);
         _logger.LogInfo("\nPress 'Enter' to keep the original value.");
-        _logger.LogInfo("\nEnter '--d' to delete the original value.\n");
         Employee updatedEmployee = GetUpdatedDataFromUser();
         try
         {

@@ -167,11 +167,6 @@ public partial class EMS
                 return null;
             }
 
-            if (input == "--d")
-            {
-                return -1;
-            }
-
             result = EnumCheck<TEnum>(input);
 
             if (!result.isValid)
