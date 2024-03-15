@@ -34,7 +34,7 @@ public class EmployeeDAL : IEmployeeDAL
 
         foreach (var employee in existingEmployees)
         {
-            EmployeeDetails employeeDetails = ConvertToEmployeeDetails(employee);
+            EmployeeDetails employeeDetails = GetEmployeeDetails(employee);
             employeeDetailsList.Add(employeeDetails);
         }
         return employeeDetailsList;
@@ -80,7 +80,7 @@ public class EmployeeDAL : IEmployeeDAL
     {
         List<Employee> employees = _jsonUtils.ReadJSON<Employee>(_filePath);
 
-        List<EmployeeDetails> employeeDetailsList = employees.Select(ConvertToEmployeeDetails).ToList();
+        List<EmployeeDetails> employeeDetailsList = employees.Select(GetEmployeeDetails).ToList();
 
         if (filters != null)
         {
@@ -107,7 +107,7 @@ public class EmployeeDAL : IEmployeeDAL
         return count;
     }
 
-    private static EmployeeDetails ConvertToEmployeeDetails(Employee employee)
+    private static EmployeeDetails GetEmployeeDetails(Employee employee)
     {
 
         EmployeeDetails employeeDetails = new()
