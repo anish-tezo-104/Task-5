@@ -12,11 +12,6 @@ public class ConsoleLogger : ILogger
         LogMessage(message + "\n", ConsoleColor.Green, newLine);
     }
 
-    public void LogInfo(string message, bool newLine = true)
-    {
-        LogMessage(message, ConsoleColor.White, newLine);
-    }
-
     public void LogWarning(string message, bool newLine = true)
     {
         LogMessage(message + "\n", ConsoleColor.DarkYellow, newLine);

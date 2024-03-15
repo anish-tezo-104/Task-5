@@ -28,7 +28,7 @@ public class EmployeeDAL : IEmployeeDAL
         List<Employee> existingEmployees = _jsonUtils.ReadJSON<Employee>(_filePath);
         if (existingEmployees == null || existingEmployees.Count == 0)
         {
-            throw new Exception("No employee(s) found.");
+            return [];
         }
         List<EmployeeDetails> employeeDetailsList = new List<EmployeeDetails>();
 
@@ -72,11 +72,11 @@ public class EmployeeDAL : IEmployeeDAL
         }
         else
         {
-            throw new Exception($"Employee with EmpNo '{empNo}' not found.");
+            throw new InvalidDataException($"Employee with EmpNo '{empNo}' not found.");
         }
     }
 
-    public List<EmployeeDetails>? SearchOrFilter(EmployeeFilters? filters)
+    public List<EmployeeDetails>? Filter(EmployeeFilters? filters)
     {
         List<Employee> employees = _jsonUtils.ReadJSON<Employee>(_filePath);
 
@@ -88,7 +88,7 @@ public class EmployeeDAL : IEmployeeDAL
             employeeDetailsList = ApplyFilter(employeeDetailsList, filters);
 
             // Apply search
-            if (filters.Search != null)
+            if (!string.IsNullOrWhiteSpace(filters.Search)) 
             {
                 employeeDetailsList = ApplySearch(employeeDetailsList, filters.Search);
             }

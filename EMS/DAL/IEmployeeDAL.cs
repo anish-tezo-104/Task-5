@@ -7,7 +7,7 @@ public interface IEmployeeDAL
     public List<EmployeeDetails>? RetrieveAll();
     public bool Update(string empNo, Employee updatedEmployee);
     public bool Delete(string empNo);
-    public List<EmployeeDetails>? SearchOrFilter(EmployeeFilters? filters);
+    public List<EmployeeDetails>? Filter(EmployeeFilters? filters);
     public int Count();
 }
 

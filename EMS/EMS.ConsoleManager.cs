@@ -8,7 +8,7 @@ public partial class EMS
 {
     public static partial Employee GetEmployeeDataFromUser()
     {
-        _logger.LogInfo("Enter employee details:\n", true);
+        PrintConsoleMessage("Enter employee details:\n", true);
         bool required = true;
         Employee employee = new();
         string empNo = GetDataFromField("Employee Number", required);
@@ -44,24 +44,24 @@ public partial class EMS
         DisplayEnumOptions<Department>();
         DisplayEnumOptions<Status>();
         EmployeeFilters filters = new();
-        _logger.LogInfo("\nEnter the filter criteria:\n\n");
+        PrintConsoleMessage("\nEnter the filter criteria:\n\n");
 
         string alphabetInput = GetDataFromField("Enter alphabet letters (separated by comma if multiple)");
         filters.Alphabet = string.IsNullOrEmpty(alphabetInput) ? null : alphabetInput.Split(',').SelectMany(x => x.Trim().Select(char.ToLower)).ToList();
-        var locationResult = ValidateFiltersWithEnum<Location>("Location");
-        if (locationResult.isValid)
+
+        if (ValidateFiltersWithEnum<Location>("Location", out var locationIds))
         {
-            filters.Locations = locationResult.ToTuple().Item2;
+            filters.Locations = locationIds;
         }
-        var departmentResult = ValidateFiltersWithEnum<Department>("Department");
-        if (departmentResult.isValid)
+
+        if (ValidateFiltersWithEnum<Department>("Department", out var departmentIds))
         {
-            filters.Departments = departmentResult.ToTuple().Item2;
+            filters.Departments = departmentIds;
         }
-        var statusResult = ValidateFiltersWithEnum<Status>("Status");
-        if (statusResult.isValid)
+
+        if (ValidateFiltersWithEnum<Status>("Status", out var statusIds))
         {
-            filters.Status = statusResult.ToTuple().Item2;
+            filters.Status = statusIds;
         }
 
         return filters;
@@ -71,7 +71,7 @@ public partial class EMS
     {
         EmployeeFilters filters = new();
 
-        _logger.LogInfo("Enter the search keyword:");
+        PrintConsoleMessage("Enter the search keyword:");
         filters.Search = Console.ReadLine()?.Trim();
 
         return filters;
@@ -157,7 +157,7 @@ public partial class EMS
 
     private static int? GetValidEnumInput<TEnum>(string fieldName) where TEnum : struct, Enum
     {
-        (bool isValid, List<int> enumIds) result;
+        List<int> enumIds;
         do
         {
             string input = GetDataFromField(fieldName)?.Replace(" ", "");
@@ -167,43 +167,40 @@ public partial class EMS
                 return null;
             }
 
-            result = EnumCheck<TEnum>(input);
-
-            if (!result.isValid)
+            if (!EnumCheck<TEnum>(input, out enumIds))
             {
                 _logger.LogError($"Invalid value. Please enter a valid {fieldName}.");
             }
-        } while (!result.isValid);
+        } while (enumIds.Count == 0);
 
-        return result.isValid && result.enumIds.Count > 0 ? result.enumIds[0] : null;
+        return enumIds[0];
     }
 
-    private static (bool isValid, List<int> enumIds) ValidateFiltersWithEnum<TEnum>(string fieldName) where TEnum : struct, Enum
+    private static bool ValidateFiltersWithEnum<TEnum>(string fieldName, out List<int> enumIds) where TEnum : struct, Enum
     {
         string input;
-        (bool isValid, List<int> enumIds) result;
+        enumIds = [];
         do
         {
             input = GetDataFromField(fieldName)?.Trim();
 
             if (string.IsNullOrWhiteSpace(input))
             {
-                return (true, new List<int>());
+                return true;
             }
 
-            result = EnumCheck<TEnum>(input);
-            if (!result.isValid)
+            if (!EnumCheck<TEnum>(input, out enumIds))
             {
                 _logger.LogError($"Invalid value. Please enter a valid {fieldName}.");
             }
-        } while (!result.isValid);
+        } while (enumIds.Count == 0);
 
-        return result;
+        return true;
     }
 
-    private static (bool success, List<int> enumIds) EnumCheck<TEnum>(string input) where TEnum : struct, Enum
+    private static bool EnumCheck<TEnum>(string input, out List<int> enumIds) where TEnum : struct, Enum
     {
-        List<int> enumIds = [];
+        enumIds = new List<int>();
         string[] values = input.Split(',').Select(x => x.Trim()).ToArray();
         foreach (var value in values)
         {
@@ -213,10 +210,10 @@ public partial class EMS
             }
             else
             {
-                return (false, new List<int>());
+                return false;
             }
         }
-        return (true, enumIds);
+        return true;
     }
 
     private static void PrintEmployeesTableHeader()
@@ -229,7 +226,7 @@ public partial class EMS
 
     private static string? GetDataFromField(string message, bool isRequired = false)
     {
-        _logger.LogInfo($"{message}: ", false);
+        PrintConsoleMessage($"{message}: ", false);
         string fieldInput = Console.ReadLine();
         if (isRequired && (string.IsNullOrEmpty(fieldInput) || string.IsNullOrWhiteSpace(fieldInput)))
         {
@@ -241,10 +238,22 @@ public partial class EMS
 
     private static void DisplayEnumOptions<T>()
     {
-        _logger.LogInfo($"\n{typeof(T).Name}:\n");
+        PrintConsoleMessage($"\n{typeof(T).Name}:\n");
         foreach (var value in Enum.GetValues(typeof(T)))
         {
-            _logger.LogInfo($"{(int)value} : {value}\n", false);
+            PrintConsoleMessage($"{(int)value} : {value}\n", false);
+        }
+    }
+
+    private static void PrintConsoleMessage(string message, bool newLine = true)
+    {
+        if (newLine)
+        {
+            Console.WriteLine(message);
+        }
+        else
+        {
+            Console.Write(message);
         }
     }
 }
