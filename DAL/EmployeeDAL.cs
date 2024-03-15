@@ -50,12 +50,11 @@ public class EmployeeDAL : IEmployeeDAL
         dbEmployee.Email = GetUpdatedValue(employee.Email, dbEmployee.Email);
         dbEmployee.MobileNumber = GetUpdatedValue(employee.MobileNumber, dbEmployee.MobileNumber);
         dbEmployee.JoiningDate = employee.JoiningDate ?? dbEmployee.JoiningDate;
-        dbEmployee.LocationId = GetUpdatedValue(employee.LocationId, dbEmployee.LocationId);
+        dbEmployee.LocationId = employee.LocationId == -1 ? null : GetUpdatedValue(employee.LocationId, dbEmployee.LocationId);
         dbEmployee.JobTitle = GetUpdatedValue(employee.JobTitle, dbEmployee.JobTitle);
-        dbEmployee.DepartmentId = GetUpdatedValue(employee.DepartmentId, dbEmployee.DepartmentId);
-        dbEmployee.AssignManagerId = GetUpdatedValue(employee.AssignManagerId, dbEmployee.AssignManagerId);
-        dbEmployee.AssignProjectId = GetUpdatedValue(employee.AssignProjectId, dbEmployee.AssignProjectId);
-
+        dbEmployee.DepartmentId = employee.DepartmentId == -1 ? null : GetUpdatedValue(employee.DepartmentId, dbEmployee.DepartmentId);
+        dbEmployee.AssignManagerId = employee.AssignManagerId == -1 ? null : GetUpdatedValue(employee.AssignManagerId, dbEmployee.AssignManagerId);
+        dbEmployee.AssignProjectId = employee.AssignProjectId == -1 ? null : GetUpdatedValue(employee.AssignProjectId, dbEmployee.AssignProjectId);
         _jsonUtils.WriteJSON(existingEmployees, _filePath);
         return true;
     }
@@ -186,6 +185,17 @@ public class EmployeeDAL : IEmployeeDAL
         {
             return oldValue;
         }
+
+        else if (typeof(T) == typeof(string))
+        {
+            string stringNewValue = Convert.ToString(newValue);
+            if (stringNewValue != null && stringNewValue.Equals("--d"))
+            {
+                return default; // Indicates deletion
+            }
+        }
+
         return newValue;
     }
+
 }

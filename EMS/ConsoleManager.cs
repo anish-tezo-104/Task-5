@@ -94,13 +94,13 @@ public partial class EMS
         PrintEmployeesTableHeader();
         foreach (EmployeeDetails employee in employees)
         {
-            string fullName = $"{employee.FirstName ?? "--"} {employee.LastName ?? "--"}";
-            string dob = employee.Dob?.ToString("dd-MM-yyyy") ?? "--";
-            string email = employee.Email ?? "--";
-            string mobileNumber = employee.MobileNumber ?? "--";
-            string locationName = employee.LocationName ?? "--";
-            string jobTitle = employee.JobTitle ?? "--";
-            string departmentName = employee.DepartmentName ?? "--";
+            string fullName = $"{employee.FirstName ?? null} {employee.LastName ?? null}";
+            string dob = employee.Dob?.ToString("dd-MM-yyyy") ?? null;
+            string email = employee.Email ?? null;
+            string mobileNumber = employee.MobileNumber ?? null;
+            string locationName = employee.LocationName ?? null;
+            string jobTitle = employee.JobTitle ?? null;
+            string departmentName = employee.DepartmentName ?? null;
 
             Console.WriteLine($" {employee.EmpNo}\t\t|{fullName,-20}\t|{employee.StatusName,-10}\t|{dob}\t|{email,-30}\t|{mobileNumber}\t|{locationName,-10}\t\t|{jobTitle,-30}\t|{departmentName}");
         }
@@ -116,45 +116,14 @@ public partial class EMS
             Dob = ParseNullableDate(GetDataFromField("Date of Birth (YYYY-MM-DD)")),
             Email = GetDataFromField("Email")!,
             MobileNumber = GetDataFromField("Mobile Number")!,
-            JoiningDate = ParseNullableDate(GetDataFromField("Joining Date (YYYY-MM-DD)"))
+            JoiningDate = ParseNullableDate(GetDataFromField("Joining Date (YYYY-MM-DD)")),
+            LocationId = GetValidEnumInput<Location>("Location"),
+            JobTitle = GetDataFromField("Job Title")!,
+            DepartmentId = GetValidEnumInput<Department>("Department"),
+            AssignManagerId = GetValidEnumInput<Manager>("Assign Manager"),
+            AssignProjectId = GetValidEnumInput<Project>("Assign Project")
         };
-        int? locationId = GetValidEnumInput<Location>("Location");
-        if (locationId == -1)
-        {
-            employee.LocationId = null;
-        }
-        else
-        {
-            employee.LocationId = locationId;
-        }
-        employee.JobTitle = GetDataFromField("Job Title")!;
-        int? departmentId = GetValidEnumInput<Department>("Department");
-        if (departmentId == -1)
-        {
-            employee.DepartmentId = null;
-        }
-        else
-        {
-            employee.DepartmentId = departmentId;
-        }
-        int? assignManagerId = GetValidEnumInput<Manager>("Assign Manager");
-        if (assignManagerId == -1)
-        {
-            employee.AssignManagerId = null;
-        }
-        else
-        {
-            employee.AssignManagerId = assignManagerId;
-        }
-        int? assignProjectId = GetValidEnumInput<Project>("Assign Project");
-        if (assignProjectId == -1)
-        {
-            employee.AssignProjectId = null;
-        }
-        else
-        {
-            employee.AssignProjectId = assignProjectId;
-        }
+
         return employee;
     }
 
@@ -198,7 +167,7 @@ public partial class EMS
                 return null;
             }
 
-            if (input.Equals("--d"))
+            if (input == "--d")
             {
                 return -1;
             }

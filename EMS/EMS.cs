@@ -113,7 +113,7 @@ public partial class EMS
 
     public static void UpdateEmployee(string empNo)
     {
-        List<EmployeeDetails> employees = [];
+        List<EmployeeDetails> employees;
         try
         {
             var filters = new EmployeeFilters { Search = empNo };
@@ -132,7 +132,8 @@ public partial class EMS
         }
 
         PrintEmployeesDetails(employees);
-        _logger.LogInfo("\nPress 'Enter' to keep the original value.\n");
+        _logger.LogInfo("\nPress 'Enter' to keep the original value.");
+        _logger.LogInfo("\nEnter '--d' to delete the original value.\n");
         Employee updatedEmployee = GetUpdatedDataFromUser();
         try
         {
