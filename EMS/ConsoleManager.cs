@@ -102,9 +102,9 @@ public partial class EMS
             string jobTitle = employee.JobTitle ?? "--";
             string departmentName = employee.DepartmentName ?? "--";
 
-            Console.WriteLine($"{employee.EmpNo}\t\t{fullName,-20}\t{employee.StatusName,-10}\t{dob}\t{email,-30}\t{mobileNumber}\t{locationName,-10}\t\t{jobTitle,-30}\t{departmentName}");
+            Console.WriteLine($" {employee.EmpNo}\t\t|{fullName,-20}\t|{employee.StatusName,-10}\t|{dob}\t|{email,-30}\t|{mobileNumber}\t|{locationName,-10}\t\t|{jobTitle,-30}\t|{departmentName}");
         }
-        Console.WriteLine("-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------\n");
+        Console.WriteLine("-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------\n");
     }
 
     public static partial Employee GetUpdatedDataFromUser()
@@ -258,9 +258,9 @@ public partial class EMS
     private static void PrintEmployeesTableHeader()
     {
         Console.WriteLine("\nEmployee Details:\n");
-        Console.WriteLine("-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------");
-        Console.WriteLine("Employee ID\tName\t\t\tStatus\t\tDate of Birth\tEmail\t\t\t\tMobile Number\tLocation\t\tJob Title\t\t\tDepartment");
-        Console.WriteLine("-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------");
+        Console.WriteLine("-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------");
+        Console.WriteLine(" Employee ID\t|Name\t\t\t|Status\t\t|Date of Birth\t|Email\t\t\t\t|Mobile Number\t|Location\t\t|Job Title\t\t\t|Department");
+        Console.WriteLine("-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------");
     }
 
     private static string? GetDataFromField(string message, bool isRequired = false)

@@ -15,7 +15,6 @@ public partial class EMS
     internal static JSONUtils jsonUtils;
     private static readonly ILogger _logger;
 
-    //Defining functions present in partial class
     public static partial Employee GetEmployeeDataFromUser();
 
     public static partial void PrintEmployeesDetails(List<EmployeeDetails> employees);
