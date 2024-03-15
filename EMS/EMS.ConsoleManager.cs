@@ -7,7 +7,7 @@ namespace EmployeeManagementSystem;
 public delegate bool IsEmpNoDuplicate(string empNo);
 public partial class EMS
 {
-    public static partial Employee GetEmployeeDataFromUser()
+    private static partial Employee GetEmployeeDataFromUser()
     {
         PrintConsoleMessage("Enter employee details:\n", true);
         bool required = true;
@@ -39,7 +39,7 @@ public partial class EMS
         return employee;
     }
 
-    public static partial EmployeeFilters? GetEmployeeFiltersFromConsole()
+    private static partial EmployeeFilters? GetEmployeeFiltersFromConsole()
     {
         DisplayEnumOptions<Location>();
         DisplayEnumOptions<Department>();
@@ -68,7 +68,7 @@ public partial class EMS
         return filters;
     }
 
-    public static partial EmployeeFilters? GetSearchKeywordFromConsole()
+    private static partial EmployeeFilters? GetSearchKeywordFromConsole()
     {
         EmployeeFilters filters = new();
 
@@ -78,7 +78,7 @@ public partial class EMS
         return filters;
     }
 
-    public static void ResetFilters(EmployeeFilters Filters)
+    private static void ResetFilters(EmployeeFilters Filters)
     {
         if (Filters != null)
         {
@@ -90,7 +90,7 @@ public partial class EMS
         }
     }
 
-    public static partial void PrintEmployeesDetails(List<EmployeeDetails> employees)
+    private static partial void PrintEmployeesDetails(List<EmployeeDetails> employees)
     {
         PrintEmployeesTableHeader();
         foreach (EmployeeDetails employee in employees)
@@ -108,7 +108,7 @@ public partial class EMS
         Console.WriteLine("-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------\n");
     }
 
-    public static partial Employee GetUpdatedDataFromUser()
+    private static partial Employee GetUpdatedDataFromUser()
     {
         Employee employee = new()
         {
@@ -128,7 +128,7 @@ public partial class EMS
         return employee;
     }
 
-    public static partial IConfiguration GetIConfiguration()
+    private static partial IConfiguration GetIConfiguration()
     {
         IConfiguration configuration = new ConfigurationBuilder()
             .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)

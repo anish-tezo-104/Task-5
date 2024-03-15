@@ -16,12 +16,12 @@ public partial class EMS
     private static readonly ILogger _logger;
     private static readonly string _employeeJsonPath;
 
-    public static partial Employee GetEmployeeDataFromUser();
-    public static partial void PrintEmployeesDetails(List<EmployeeDetails> employees);
-    public static partial IConfiguration GetIConfiguration();
-    public static partial EmployeeFilters? GetEmployeeFiltersFromConsole();
-    public static partial EmployeeFilters? GetSearchKeywordFromConsole();
-    public static partial Employee GetUpdatedDataFromUser();
+    private static partial Employee GetEmployeeDataFromUser();
+    private static partial void PrintEmployeesDetails(List<EmployeeDetails> employees);
+    private static partial IConfiguration GetIConfiguration();
+    private static partial EmployeeFilters? GetEmployeeFiltersFromConsole();
+    private static partial EmployeeFilters? GetSearchKeywordFromConsole();
+    private static partial Employee GetUpdatedDataFromUser();
 
     static EMS()
     {
