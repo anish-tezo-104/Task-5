@@ -1,5 +1,6 @@
 using EmployeeManagementSystem.Utils;
 using EmployeeManagementSystem.Models;
+using EmployeeManagementSystem.Data;
 namespace EmployeeManagementSystem.DAL;
 
 public class EmployeeDAL : IEmployeeDAL
@@ -7,12 +8,14 @@ public class EmployeeDAL : IEmployeeDAL
     private readonly string _filePath = "";
     private readonly JSONUtils _jsonUtils;
     public readonly ILogger _logger;
+    public readonly IDataManager _dataManager;
 
-    public EmployeeDAL(ILogger logger, JSONUtils jsonUtils, string filePath)
+    public EmployeeDAL(ILogger logger, JSONUtils jsonUtils, string filePath, IDataManager dataManager)
     {
         _jsonUtils = jsonUtils;
         _logger = logger;
         _filePath = filePath;
+        _dataManager = dataManager;
     }
 
     public bool Insert(Employee employee)
@@ -34,7 +37,7 @@ public class EmployeeDAL : IEmployeeDAL
 
         foreach (var employee in existingEmployees)
         {
-            EmployeeDetails employeeDetails = GetEmployeeDetails(employee);
+            EmployeeDetails employeeDetails = GetEmployeeDetails(employee, _dataManager);
             employeeDetailsList.Add(employeeDetails);
         }
         return employeeDetailsList;
@@ -68,19 +71,15 @@ public class EmployeeDAL : IEmployeeDAL
         {
             existingEmployees.Remove(employeeToDelete);
             _jsonUtils.WriteJSON(existingEmployees, _filePath);
-            return true;
+            
         }
-        else
-        {
-            throw new InvalidDataException($"Employee with EmpNo '{empNo}' not found.");
-        }
+        return true;
     }
 
     public List<EmployeeDetails>? Filter(EmployeeFilters? filters)
     {
         List<Employee> employees = _jsonUtils.ReadJSON<Employee>(_filePath);
-
-        List<EmployeeDetails> employeeDetailsList = employees.Select(GetEmployeeDetails).ToList();
+        List<EmployeeDetails> employeeDetailsList = employees.Select(employee => GetEmployeeDetails(employee, _dataManager)).ToList();
 
         if (filters != null)
         {
@@ -88,15 +87,17 @@ public class EmployeeDAL : IEmployeeDAL
             employeeDetailsList = ApplyFilter(employeeDetailsList, filters);
 
             // Apply search
-            if (!string.IsNullOrWhiteSpace(filters.Search)) 
+            if (!string.IsNullOrWhiteSpace(filters.Search))
             {
                 employeeDetailsList = ApplySearch(employeeDetailsList, filters.Search);
             }
         }
+
         if (employeeDetailsList.Count == 0)
         {
-            return [];
+            return new List<EmployeeDetails>(); // Return an empty list
         }
+
         return employeeDetailsList;
     }
 
@@ -107,28 +108,28 @@ public class EmployeeDAL : IEmployeeDAL
         return count;
     }
 
-    private static EmployeeDetails GetEmployeeDetails(Employee employee)
+    private static EmployeeDetails GetEmployeeDetails(Employee employee, IDataManager _dataManager)
     {
         EmployeeDetails employeeDetails = new()
         {
             EmpNo = employee.EmpNo,
             StatusId = employee.StatusId,
-            StatusName = ((Status)employee.StatusId).ToString(),
+            StatusName = _dataManager.GetStatusName(employee.StatusId),
             FirstName = employee.FirstName,
             LastName = employee.LastName,
             Dob = employee.Dob,
             Email = employee.Email,
             MobileNumber = employee.MobileNumber,
             LocationId = employee.LocationId,
-            LocationName = employee.LocationId.HasValue ? ((Location)employee.LocationId).ToString() : null,
+            LocationName = _dataManager.GetLocationName(employee.LocationId),
             JoiningDate = employee.JoiningDate,
             JobTitle = employee.JobTitle,
             DepartmentId = employee.DepartmentId,
-            DepartmentName = employee.DepartmentId.HasValue ? ((Department)employee.DepartmentId).ToString() : null,
+            DepartmentName = _dataManager.GetDepartmentName(employee.DepartmentId),
             AssignManagerId = employee.AssignManagerId,
-            AssignManagerName = employee.AssignManagerId.HasValue ? ((Manager)employee.AssignManagerId).ToString() : null,
+            AssignManagerName = _dataManager.GetManagerName(employee.AssignManagerId),
             AssignProjectId = employee.AssignProjectId,
-            AssignProjectName = employee.AssignProjectId.HasValue ? ((Project)employee.AssignProjectId).ToString() : null
+            AssignProjectName = _dataManager.GetProjectName(employee.AssignProjectId)
         };
         return employeeDetails;
     }

@@ -1,6 +1,7 @@
 using Microsoft.Extensions.Configuration;
 using EmployeeManagementSystem.Models;
 using System.Globalization;
+using System.Reflection;
 
 namespace EmployeeManagementSystem;
 
@@ -29,43 +30,171 @@ public partial class EMS
         string joiningDate = GetDataFromField("Joining Date (YYYY-MM-DD)", required);
         DateTime.TryParse(joiningDate, out DateTime joiningDateValue);
         employee.JoiningDate = joiningDateValue;
-        employee.LocationId = GetValidEnumInput<Location>("Location");
+        employee.LocationId = GetIdFromUser<Location>("Location", "LocationJsonPath");
         string jobTitle = GetDataFromField("Job Title");
         employee.JobTitle = string.IsNullOrWhiteSpace(jobTitle) ? null : jobTitle;
-        employee.DepartmentId = GetValidEnumInput<Department>("Department");
-        employee.AssignManagerId = GetValidEnumInput<Project>("Assign Project");
-        employee.AssignProjectId = GetValidEnumInput<Manager>("Assign Manager");
+        employee.DepartmentId = GetIdFromUser<Department>("Department", "DepartmentJsonPath");
+        employee.AssignManagerId = GetIdFromUser<Manager>("Assign Manager", "ManagerJsonPath");
+        employee.AssignProjectId = GetIdFromUser<Project>("Assign Project", "ProjectJsonPath");
 
         return employee;
     }
 
+    public static int? GetIdFromUser<T>(string fieldName, string jsonFilePathKey) where T : class
+    {
+        string filePath = GetIConfiguration()[jsonFilePathKey];
+
+        string userInput;
+        int? id;
+        do
+        {
+            userInput = GetDataFromField(fieldName);
+            if (string.IsNullOrWhiteSpace(userInput)) return null;
+
+            id = FindIdInJson<T>(userInput, filePath);
+            if (id == null)
+            {
+                _logger.LogError($"Invalid {fieldName}. Please try again.");
+            }
+        } while (id == null);
+
+        return id;
+    }
+
+    private static int? FindIdInJson<T>(string userInput, string jsonFilePath) where T : class
+    {
+        try
+        {
+            if (File.Exists(jsonFilePath))
+            {
+                var items = _jsonUtils.ReadJSON<T>(jsonFilePath);
+                if (items != null)
+                {
+                    PropertyInfo[] properties = typeof(T).GetProperties();
+                    foreach (var item in items)
+                    {
+                        foreach (var property in properties)
+                        {
+                            if (property.PropertyType == typeof(string)) // to get the name property, Location name, manager name etc
+                            {
+                                string value = (string)property.GetValue(item);
+                                if (value != null && value.Equals(userInput, StringComparison.OrdinalIgnoreCase))
+                                {
+                                    PropertyInfo idProperty = typeof(T).GetProperty("Id");
+                                    if (idProperty != null)
+                                    {
+                                        object idValue = idProperty.GetValue(item);
+                                        if (idValue is int id)
+                                        {
+                                            return id;
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            else
+            {
+                _logger.LogError(Constants.FileNotFoundExceptionMessage);
+                throw new FileNotFoundException($"Error: File '{jsonFilePath}' is not present. No Data Available");
+            }
+        }
+        catch (IOException)
+        {
+            _logger.LogError(Constants.IOExceptionMessage);
+        }
+        return null;
+    }
+
     private static partial EmployeeFilters? GetEmployeeFiltersFromConsole()
     {
-        DisplayEnumOptions<Location>();
-        DisplayEnumOptions<Department>();
-        DisplayEnumOptions<Status>();
+        DisplayJsonOptions<Location>(GetIConfiguration()["LocationJsonPath"]);
+        DisplayJsonOptions<Department>(GetIConfiguration()["DepartmentJsonPath"]);
+        DisplayJsonOptions<Status>(GetIConfiguration()["StatusJsonPath"]);
+
         EmployeeFilters filters = new();
         PrintConsoleMessage("\nEnter the filter criteria:\n\n");
 
         string alphabetInput = GetDataFromField("Enter alphabet letters (separated by comma if multiple)");
         filters.Alphabet = string.IsNullOrEmpty(alphabetInput) ? null : alphabetInput.Split(',').SelectMany(x => x.Trim().Select(char.ToLower)).ToList();
 
-        if (ValidateFiltersWithEnum<Location>("Location", out var locationIds))
-        {
-            filters.Locations = locationIds;
-        }
+        ValidateFilters<Location>("Location", "LocationJsonPath", out var locationIds);
+        filters.Locations = locationIds;
 
-        if (ValidateFiltersWithEnum<Department>("Department", out var departmentIds))
-        {
-            filters.Departments = departmentIds;
-        }
+        ValidateFilters<Department>("Department", "DepartmentJsonPath", out var departmentIds);
+        filters.Departments = departmentIds;
 
-        if (ValidateFiltersWithEnum<Status>("Status", out var statusIds))
-        {
-            filters.Status = statusIds;
-        }
+        ValidateFilters<Status>("Status", "StatusJsonPath", out var statusIds);
+        filters.Status = statusIds;
 
         return filters;
+    }
+
+    private static void DisplayJsonOptions<T>(string filePath) where T : class
+    {
+        try
+        {
+            if (File.Exists(filePath))
+            {
+                List<T> items = _jsonUtils.ReadJSON<T>(filePath);
+
+                if (items != null && items.Count > 0)
+                {
+                    PrintConsoleMessage($"\n{typeof(T).Name}:\n");
+                    foreach (var item in items)
+                    {
+                        PropertyInfo[] properties = typeof(T).GetProperties();
+                        foreach (var property in properties)
+                        {
+                            object value = property.GetValue(item);
+                            PrintConsoleMessage($"{value}  ", false);
+                        }
+                        PrintConsoleMessage("\n");
+                    }
+                }
+            }
+            else
+            {
+                PrintConsoleMessage(Constants.ExceptionMessage);
+            }
+        }
+        catch (IOException)
+        {
+            PrintConsoleMessage(Constants.IOExceptionMessage);
+        }
+    }
+
+    private static void ValidateFilters<T>(string fieldName, string jsonFilePathKey, out List<int> ids) where T : class
+    {
+        string input;
+        ids = [];
+        string filePath = GetIConfiguration()[jsonFilePathKey];
+        do
+        {
+            input = GetDataFromField(fieldName);
+
+            if (string.IsNullOrWhiteSpace(input))
+            {
+                break;
+            }
+
+            var filterValues = input.Split(',').Select(value => value);
+
+            foreach (var filterValue in filterValues)
+            {
+                var id = FindIdInJson<T>(filterValue, filePath);
+                if (id.HasValue)
+                {
+                    ids.Add(id.Value);
+                }
+                else
+                {
+                    _logger.LogError($"Invalid value '{filterValue}'. Please enter a valid {fieldName}.");
+                }
+            }
+        } while (true);
     }
 
     private static partial EmployeeFilters? GetSearchKeywordFromConsole()
@@ -118,11 +247,11 @@ public partial class EMS
             Email = GetDataFromField("Email")!,
             MobileNumber = GetDataFromField("Mobile Number")!,
             JoiningDate = ParseNullableDate(GetDataFromField("Joining Date (YYYY-MM-DD)")),
-            LocationId = GetValidEnumInput<Location>("Location"),
+            LocationId = GetIdFromUser<Location>("Location", "LocationJsonPath"),
             JobTitle = GetDataFromField("Job Title")!,
-            DepartmentId = GetValidEnumInput<Department>("Department"),
-            AssignManagerId = GetValidEnumInput<Manager>("Assign Manager"),
-            AssignProjectId = GetValidEnumInput<Project>("Assign Project")
+            DepartmentId = GetIdFromUser<Department>("Department", "DepartmentJsonPath"),
+            AssignManagerId = GetIdFromUser<Manager>("Assign Manager", "ManagerJsonPath"),
+            AssignProjectId = GetIdFromUser<Project>("Assign Project", "ProjectJsonPath")
         };
 
         return employee;
@@ -156,72 +285,6 @@ public partial class EMS
         }
     }
 
-    private static int? GetValidEnumInput<TEnum>(string fieldName) where TEnum : struct, Enum
-    {
-        List<int> enumIds;
-        do
-        {
-            string input = GetDataFromField(fieldName)?.Replace(" ", "");
-
-            if (string.IsNullOrWhiteSpace(input))
-            {
-                return null;
-            }
-
-            if (!EnumCheck<TEnum>(input, out enumIds))
-            {
-                _logger.LogError($"Invalid value. Please enter a valid {fieldName}.");
-            }
-        } while (enumIds.Count == 0);
-
-        return enumIds[0];
-    }
-
-    private static bool ValidateFiltersWithEnum<TEnum>(string fieldName, out List<int> enumIds) where TEnum : struct, Enum
-    {
-        string input;
-        enumIds = new List<int>();
-        bool isValidInput = false; // Add a flag to track valid input
-        do
-        {
-            input = GetDataFromField(fieldName)?.Trim();
-
-            if (string.IsNullOrWhiteSpace(input))
-            {
-                return true; // Return true if input is empty or null
-            }
-
-            if (EnumCheck<TEnum>(input, out enumIds))
-            {
-                isValidInput = true; // Set the flag to true if input is valid
-            }
-            else
-            {
-                _logger.LogError($"Invalid value. Please enter a valid {fieldName}.");
-            }
-        } while (!isValidInput); // Continue looping until valid input is provided
-
-        return true;
-    }
-
-    private static bool EnumCheck<TEnum>(string input, out List<int> enumIds) where TEnum : struct, Enum
-    {
-        enumIds = new List<int>();
-        string[] values = input.Split(',').Select(x => x.Trim()).ToArray();
-        foreach (var value in values)
-        {
-            if (Enum.TryParse(value, true, out TEnum result))
-            {
-                enumIds.Add(Convert.ToInt32(result)); // Convert the enum value to its corresponding ID
-            }
-            else
-            {
-                return false;
-            }
-        }
-        return true;
-    }
-
     private static void PrintEmployeesTableHeader()
     {
         Console.WriteLine("\nEmployee Details:\n");
@@ -240,15 +303,6 @@ public partial class EMS
             return GetDataFromField(message, isRequired);
         }
         return fieldInput;
-    }
-
-    private static void DisplayEnumOptions<T>()
-    {
-        PrintConsoleMessage($"\n{typeof(T).Name}:\n");
-        foreach (var value in Enum.GetValues(typeof(T)))
-        {
-            PrintConsoleMessage($"{(int)value} : {value}\n", false);
-        }
     }
 
     private static void PrintConsoleMessage(string message, bool newLine = true)

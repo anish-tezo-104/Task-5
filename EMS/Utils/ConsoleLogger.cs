@@ -4,7 +4,7 @@ public class ConsoleLogger : ILogger
 {
     public void LogError(string message, bool newLine = true)
     {
-        LogMessage(message+"\n", ConsoleColor.Red, newLine);
+        LogMessage(message + "\n", ConsoleColor.Red, newLine);
     }
 
     public void LogSuccess(string message, bool newLine = true)
@@ -19,6 +19,7 @@ public class ConsoleLogger : ILogger
 
     private static void LogMessage(string message, ConsoleColor color, bool newLine)
     {
+        Console.ForegroundColor = ConsoleColor.White;
         Console.ForegroundColor = color;
         if (newLine)
         {
@@ -29,6 +30,6 @@ public class ConsoleLogger : ILogger
             Console.Write(message);
         }
 
-        Console.ResetColor();
+        Console.ForegroundColor = ConsoleColor.White;
     }
 }

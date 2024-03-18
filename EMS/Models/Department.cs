@@ -1,10 +1,7 @@
 namespace EmployeeManagementSystem.Models;
 
-public enum Department
+public class Department
 {
-    HR = 1,
-    IT = 2,
-    ProductEngineering = 3,
-    Management = 4,
-    Finance = 5
+    public int Id { get; set; }
+    public required string DepartmentName { get; set; }
 }

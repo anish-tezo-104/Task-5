@@ -1,11 +1,7 @@
 namespace EmployeeManagementSystem.Models;
 
-public enum Location
+public class Location
 {
-    Hyderabad = 1,
-    Delhi = 2,
-    Mumbai = 3,
-    Bangalore = 4,
-    Seattle = 5,
-    NewYork = 6
+    public int Id { get; set; }
+    public required string LocationName { get; set; }
 }

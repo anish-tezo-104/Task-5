@@ -1,7 +1,7 @@
 namespace EmployeeManagementSystem.Models;
 
-public enum Status
+public class Status
 {
-    Active = 1,
-    Inactive = 2
+    public int Id { get; set; }
+    public required string StatusName { get; set; }
 }

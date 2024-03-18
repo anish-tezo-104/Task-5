@@ -5,6 +5,7 @@ using EmployeeManagementSystem.Utils;
 using EmployeeManagementSystem.DAL;
 using EmployeeManagementSystem.BAL;
 using EmployeeManagementSystem.Models;
+using EmployeeManagementSystem.Data;
 
 namespace EmployeeManagementSystem;
 
@@ -12,6 +13,7 @@ public partial class EMS
 {
     private readonly static IEmployeeDAL _employeeDal;
     private readonly static IEmployeeBAL _employeeBal;
+    private readonly static DataManager _dataManager;
     private static JSONUtils _jsonUtils;
     private static readonly ILogger _logger;
     private static readonly string _employeeJsonPath;
@@ -27,9 +29,11 @@ public partial class EMS
     {
         _jsonUtils = new JSONUtils();
         _logger = new ConsoleLogger();
+        _dataManager = new DataManager(GetIConfiguration());
         _employeeJsonPath = GetIConfiguration()["EmployeesJsonPath"];
-        _employeeDal = new EmployeeDAL(_logger, _jsonUtils, _employeeJsonPath);
+        _employeeDal = new EmployeeDAL(_logger, _jsonUtils, _employeeJsonPath, _dataManager);
         _employeeBal = new EmployeeBAL(_logger, _employeeDal);
+        
     }
 
     public static int Main(string[] args)
@@ -143,6 +147,24 @@ public partial class EMS
 
     private static void DeleteEmployee(string empNo)
     {
+        List<EmployeeDetails> employees;
+        try
+        {
+            var filters = new EmployeeFilters { Search = empNo };
+            employees = _employeeBal.SearchEmployees(filters);
+        }
+        catch (Exception)
+        {
+            _logger.LogError(Constants.ExceptionMessage);
+            return;
+        }
+
+        if (employees == null || employees.Count == 0)
+        {
+            _logger.LogSuccess(Constants.EmpNoNotFound);
+            return;
+        }
+        
         bool status = _employeeBal.DeleteEmployees(empNo);
         if (status)
         {
@@ -209,7 +231,7 @@ public partial class EMS
             List<EmployeeDetails> employees = _employeeBal.SearchEmployees(keyword);
             if (employees != null )
             {
-                _logger.LogSuccess($"{Constants.FilterEmployeesSuccess} {employees.Count}");
+                _logger.LogSuccess($"{Constants.SearchEmployeeSuccess} {employees.Count}");
                 if(employees.Count > 0)
                 {
                     PrintEmployeesDetails(employees);
