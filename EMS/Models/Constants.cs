@@ -15,4 +15,5 @@ public class Constants
     public const string FilterEmployeesSuccess = "Filtration successfully.\nEmployee(s) found: ";
     public const string CountEmployeesSuccess = "Total Employees: ";
     public const string GettingDataFromConsoleError = "Error retrieving data from console.";
+    public const string AddRoleSuccess = "Role added successfully.";
 }

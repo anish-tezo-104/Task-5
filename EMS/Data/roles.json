@@ -1,0 +1,10 @@
+[
+  { "Id": 1, "RoleName": "Software Engineer", "DepartmentId": 1 },
+  { "Id": 2, "RoleName": "Senior DevOps Engineer", "DepartmentId": 2 },
+  { "Id": 3, "RoleName": "Financial Analyst", "DepartmentId": 3 },
+  { "Id": 4, "RoleName": "HR Coordinator", "DepartmentId": 4 },
+  { "Id": 5, "RoleName": "Data Scientist", "DepartmentId": 5 },
+  { "Id": 6, "RoleName": "Accountant", "DepartmentId": 6 },
+  { "Id": 7, "RoleName": "Sales Director", "DepartmentId": 7 },
+  { "Id": 0, "RoleName": "Software Engineer Trainee", "DepartmentId": 2 }
+]

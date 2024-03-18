@@ -8,7 +8,9 @@ namespace EmployeeManagementSystem;
 public delegate bool IsEmpNoDuplicate(string empNo);
 public partial class EMS
 {
-    private static partial Employee GetEmployeeDataFromUser()
+
+    //Employees related Partial Functions
+    private static partial Employee GetEmployeeDataFromConsole()
     {
         PrintConsoleMessage("Enter employee details:\n", true);
         bool required = true;
@@ -40,7 +42,7 @@ public partial class EMS
         return employee;
     }
 
-    public static int? GetIdFromUser<T>(string fieldName, string jsonFilePathKey) where T : class
+    public static int? GetIdFromUser<T>(string fieldName, string jsonFilePathKey, bool isRequired = false) where T : class
     {
         string filePath = GetIConfiguration()[jsonFilePathKey];
 
@@ -48,7 +50,7 @@ public partial class EMS
         int? id;
         do
         {
-            userInput = GetDataFromField(fieldName);
+            userInput = GetDataFromField(fieldName, isRequired);
             if (string.IsNullOrWhiteSpace(userInput)) return null;
 
             id = FindIdInJson<T>(userInput, filePath);
@@ -304,6 +306,20 @@ public partial class EMS
         }
         return fieldInput;
     }
+
+    private static partial Role GetRoleDataFromConsole()
+    {
+        PrintConsoleMessage("Enter Role details:\n", true);
+        bool required = true;
+        Role role = new()
+        {
+            RoleName = GetDataFromField("Role Name", required)!,
+            DepartmentId = GetIdFromUser<Department>("Department", "DepartmentJsonPath", required)
+        };
+
+        return role;
+    }
+
 
     private static void PrintConsoleMessage(string message, bool newLine = true)
     {

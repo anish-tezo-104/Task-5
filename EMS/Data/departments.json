@@ -1,26 +1,30 @@
 [
   {
-    "Id" : 1,
-    "DepartmentName" : "IT"
+    "Id": 1,
+    "DepartmentName": "Engineering"
   },
   {
-    "Id" : 2,
-    "DepartmentName" : "Engineering"
+    "Id": 2,
+    "DepartmentName": "IT"
   },
   {
-    "Id" : 3,
-    "DepartmentName" : "Human Resources"
+    "Id": 3,
+    "DepartmentName": "Finance"
   },
   {
-    "Id" : 4,
-    "DepartmentName" : "Finance"
+    "Id": 4,
+    "DepartmentName": "Human Resources"
   },
   {
-    "Id" : 5,
-    "DepartmentName" : "Marketing"
+    "Id": 5,
+    "DepartmentName": "Data Science"
   },
   {
-    "Id" : 6,
-    "DepartmentName" : "Sales"
+    "Id": 6,
+    "DepartmentName": "Accounting"
+  },
+  {
+    "Id": 7,
+    "DepartmentName": "Sales"
   }
 ]

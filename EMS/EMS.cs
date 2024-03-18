@@ -12,13 +12,19 @@ namespace EmployeeManagementSystem;
 public partial class EMS
 {
     private readonly static IEmployeeDAL _employeeDal;
+    private readonly static IRoleDAL _roleDal;
     private readonly static IEmployeeBAL _employeeBal;
+    private readonly static IRoleBAL _roleBal;
+
     private readonly static DataManager _dataManager;
     private static JSONUtils _jsonUtils;
     private static readonly ILogger _logger;
     private static readonly string _employeeJsonPath;
+    private static readonly string _roleJsonPath;
 
-    private static partial Employee GetEmployeeDataFromUser();
+    private static partial Employee GetEmployeeDataFromConsole();
+    private static partial Role GetRoleDataFromConsole();
+
     private static partial void PrintEmployeesDetails(List<EmployeeDetails> employees);
     private static partial IConfiguration GetIConfiguration();
     private static partial EmployeeFilters? GetEmployeeFiltersFromConsole();
@@ -31,9 +37,12 @@ public partial class EMS
         _logger = new ConsoleLogger();
         _dataManager = new DataManager(GetIConfiguration());
         _employeeJsonPath = GetIConfiguration()["EmployeesJsonPath"];
+        _roleJsonPath = GetIConfiguration()["RoleJsonPath"];
         _employeeDal = new EmployeeDAL(_logger, _jsonUtils, _employeeJsonPath, _dataManager);
+        _roleDal = new RoleDAL(_logger, _jsonUtils, _roleJsonPath, _dataManager);
         _employeeBal = new EmployeeBAL(_logger, _employeeDal);
-        
+        _roleBal = new RoleBAL(_logger, _roleDal);
+        _roleDal = new RoleDAL(_logger, _jsonUtils, _roleJsonPath, _dataManager);
     }
 
     public static int Main(string[] args)
@@ -44,47 +53,58 @@ public partial class EMS
 
     private static int HandleCommandArgs(string[] args, RootCommand rootCommand)
     {
-        var addCommand = new Command("--add", "Add a new employee")
+
+        //Employees Command
+        var addEmployeesCommand = new Command("--add-emp", "Add a new employee")
         {
             Handler = CommandHandler.Create(() => AddEmployee())
         };
-        var showCommand = new Command("--show", "Show employees list")
+        var showEmployeesCommand = new Command("--show-emp", "Show employees list")
         {
             Handler = CommandHandler.Create(() => DisplayEmployees())
         };
-        var filterCommand = new Command("--filter", "Filter employees list")
+        var filterEmployeesCommand = new Command("--filter-emp", "Filter employees list")
         {
             Handler = CommandHandler.Create(() => FilterEmployees())
         };
-        var deleteCommand = new Command("--delete", "Delete an employee [Input : Employee Number]")
-        {
-            new Argument<string>("empNo", "EmployeeNumber")
-        };
-        deleteCommand.Handler = CommandHandler.Create((string empNo) => DeleteEmployee(empNo));
+        var deleteEmployeesCommand = new Command("--delete-emp", "Delete an employee [Input : Employee Number]")
+    {
+        new Argument<string>("empNo", "EmployeeNumber")
+    };
+        deleteEmployeesCommand.Handler = CommandHandler.Create((string empNo) => DeleteEmployee(empNo));
 
-        var updateCommand = new Command("--update", "Update an employee detail"){
-            new Argument<string>("empNo", "EmployeeNumber")
-        };
-        updateCommand.Handler = CommandHandler.Create((string empNo) => UpdateEmployee(empNo));
+        var updateEmployeesCommand = new Command("--update-emp", "Update an employee detail"){
+        new Argument<string>("empNo", "EmployeeNumber")
+    };
+        updateEmployeesCommand.Handler = CommandHandler.Create((string empNo) => UpdateEmployee(empNo));
 
-        var searchCommand = new Command("--search", "Search an employee details")
+        var searchEmployeesCommand = new Command("--search-emp", "Search an employee details")
         {
             Handler = CommandHandler.Create(() => SearchEmployee())
         };
 
-        var countEmployees = new Command("--count", "Count of employees")
+        var countEmployees = new Command("--count-emp", "Count of employees")
         {
             Handler = CommandHandler.Create(() => CountEmployees())
         };
 
+        // Roles Command
+
+        var addRolesCommand = new Command("--add-role", "Add new Role")
+        {
+            Handler = CommandHandler.Create(() => AddRoles())
+        };
+
         rootCommand.AddOption(new Option<string>("-o", "Display all operations"));
-        rootCommand.AddCommand(addCommand);
-        rootCommand.AddCommand(showCommand);
-        rootCommand.AddCommand(deleteCommand);
-        rootCommand.AddCommand(updateCommand);
-        rootCommand.AddCommand(searchCommand);
-        rootCommand.AddCommand(filterCommand);
+        rootCommand.AddCommand(addEmployeesCommand);
+        rootCommand.AddCommand(showEmployeesCommand);
+        rootCommand.AddCommand(deleteEmployeesCommand);
+        rootCommand.AddCommand(updateEmployeesCommand);
+        rootCommand.AddCommand(searchEmployeesCommand);
+        rootCommand.AddCommand(filterEmployeesCommand);
         rootCommand.AddCommand(countEmployees);
+
+        rootCommand.AddCommand(addRolesCommand);
 
         if (args.Length == 1 && (args[0] == "-o" || args[0] == "-options"))
         {
@@ -108,7 +128,7 @@ public partial class EMS
 
     private static void AddEmployee()
     {
-        Employee employee = GetEmployeeDataFromUser();
+        Employee employee = GetEmployeeDataFromConsole();
         if (employee == null)
         {
             _logger.LogError(Constants.GettingDataFromConsoleError);
@@ -164,7 +184,7 @@ public partial class EMS
             _logger.LogSuccess(Constants.EmpNoNotFound);
             return;
         }
-        
+
         bool status = _employeeBal.DeleteEmployees(empNo);
         if (status)
         {
@@ -229,14 +249,14 @@ public partial class EMS
         try
         {
             List<EmployeeDetails> employees = _employeeBal.SearchEmployees(keyword);
-            if (employees != null )
+            if (employees != null)
             {
                 _logger.LogSuccess($"{Constants.SearchEmployeeSuccess} {employees.Count}");
-                if(employees.Count > 0)
+                if (employees.Count > 0)
                 {
                     PrintEmployeesDetails(employees);
                 }
-                
+
             }
         }
         catch (Exception)
@@ -256,14 +276,14 @@ public partial class EMS
         try
         {
             List<EmployeeDetails> employees = _employeeBal.FilterEmployees(filters);
-            if (employees != null )
+            if (employees != null)
             {
                 _logger.LogSuccess($"{Constants.FilterEmployeesSuccess} {employees.Count}");
-                if(employees.Count > 0)
+                if (employees.Count > 0)
                 {
                     PrintEmployeesDetails(employees);
                 }
-                
+
             }
         }
         catch (Exception)
@@ -277,5 +297,26 @@ public partial class EMS
     {
         int count = _employeeBal.CountEmployees();
         _logger.LogSuccess($"{Constants.CountEmployeesSuccess} {count}");
+    }
+
+    // Roles Command Functions
+
+    private static void AddRoles()
+    {
+        Role role = GetRoleDataFromConsole();
+        if (role == null)
+        {
+            _logger.LogError(Constants.GettingDataFromConsoleError);
+            return;
+        }
+        bool status = _roleBal.AddRole(role);
+        if (status)
+        {
+            _logger.LogSuccess(Constants.AddRoleSuccess);
+        }
+        else
+        {
+            _logger.LogError(Constants.ExceptionMessage);
+        }
     }
 }
