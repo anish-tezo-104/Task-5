@@ -7,6 +7,7 @@ public class EmployeeDetails : Employee
     public string? StatusName { get; set; } = string.Empty;
     public string? AssignManagerName { get; set; } = string.Empty;
     public string? AssignProjectName { get; set; } = string.Empty;
+    public string? RoleName { get; set; } = string.Empty;
 
     public override string ToString()
     {
@@ -17,7 +18,7 @@ public class EmployeeDetails : Employee
                $"Mobile Number: {MobileNumber}\n" +
                $"Joining Date: {(JoiningDate.HasValue ? JoiningDate.Value.ToShortDateString() : string.Empty)}\n" +
                $"Location: {LocationName}\n" +
-               $"Job Title: {JobTitle}\n" +
+               $"Role: {RoleName}\n" +
                $"Department: {DepartmentName}\n" +
                $"Assign Manager: {AssignManagerName}\n" +
                $"Assign Project: {AssignProjectName}\n" +

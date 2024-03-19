@@ -1,11 +1,8 @@
-using EmployeeManagementSystem.Data;
 using EmployeeManagementSystem.Models;
 using EmployeeManagementSystem.Utils;
 using EmployeeManagementSystem.DAL;
 
 namespace EmployeeManagementSystem.BAL;
-
-
 
 public class RoleBAL : IRoleBAL
 {
@@ -20,7 +17,6 @@ public class RoleBAL : IRoleBAL
 
     public bool AddRole(Role role)
     {
-        Console.WriteLine("inside role BAl");
         bool status;
         try
         {

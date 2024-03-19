@@ -4,7 +4,6 @@ using EmployeeManagementSystem.Utils;
 
 namespace EmployeeManagementSystem.DAL;
 
-
 public class RoleDAL : IRoleDAL
 {
     private readonly string _filePath = "";
@@ -22,8 +21,6 @@ public class RoleDAL : IRoleDAL
 
     public bool Insert(Role role)
     {
-        Console.WriteLine("inside role DAl");
-        _logger.LogSuccess(_filePath);
         List<Role> existingRoles = _jsonUtils.ReadJSON<Role>(_filePath);
         existingRoles.Add(role);
         _jsonUtils.WriteJSON(existingRoles, _filePath);

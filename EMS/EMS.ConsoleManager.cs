@@ -5,17 +5,15 @@ using System.Reflection;
 
 namespace EmployeeManagementSystem;
 
-public delegate bool IsEmpNoDuplicate(string empNo);
 public partial class EMS
 {
-
     //Employees related Partial Functions
     private static partial Employee GetEmployeeDataFromConsole()
     {
-        PrintConsoleMessage("Enter employee details:\n", true);
+        PrintConsoleMessage("Enter employee details:\n");
         bool required = true;
         Employee employee = new();
-        string empNo = GetDataFromField("Employee Number", required);
+        string empNo = ValidateEmployeeNo("Employee Number", required);
         employee.EmpNo = string.IsNullOrWhiteSpace(empNo) ? null : empNo;
         employee.StatusId = 1;
         string firstName = GetDataFromField("First Name", required);
@@ -33,16 +31,96 @@ public partial class EMS
         DateTime.TryParse(joiningDate, out DateTime joiningDateValue);
         employee.JoiningDate = joiningDateValue;
         employee.LocationId = GetIdFromUser<Location>("Location", "LocationJsonPath");
-        string jobTitle = GetDataFromField("Job Title");
-        employee.JobTitle = string.IsNullOrWhiteSpace(jobTitle) ? null : jobTitle;
         employee.DepartmentId = GetIdFromUser<Department>("Department", "DepartmentJsonPath");
+        employee.RoleId = GetRoleIdFromUserForDepartment(employee.DepartmentId);
         employee.AssignManagerId = GetIdFromUser<Manager>("Assign Manager", "ManagerJsonPath");
         employee.AssignProjectId = GetIdFromUser<Project>("Assign Project", "ProjectJsonPath");
-
         return employee;
     }
 
-    public static int? GetIdFromUser<T>(string fieldName, string jsonFilePathKey, bool isRequired = false) where T : class
+    private static string? ValidateEmployeeNo(string fieldName, bool isRequired = false)
+    {
+        PrintConsoleMessage($"{fieldName}: ", ConsoleColor.White, false);
+        string empNo = Console.ReadLine();
+        if (isRequired && (string.IsNullOrEmpty(empNo) || string.IsNullOrWhiteSpace(empNo)))
+        {
+            _logger.LogWarning("Field is required. Please enter a value.\n");
+            return GetDataFromField(fieldName, isRequired);
+        }
+
+        if (empNo != null && IsEmpNoDuplicate(empNo))
+        {
+            _logger.LogWarning($"Employee already exists.");
+            ValidateEmployeeNo(fieldName, isRequired);
+        }
+        return empNo;
+    }
+
+    private static bool IsEmpNoDuplicate(string empNo)
+    {
+        List<Employee> employees = _jsonUtils.ReadJSON<Employee>(_employeeJsonPath);
+        return employees.Any(x => x.EmpNo == empNo);
+    }
+
+    private static int? GetRoleIdFromUserForDepartment(int? departmentId)
+    {
+        string departmentFilePath = GetIConfiguration()["DepartmentJsonPath"];
+        string roleFilePath = GetIConfiguration()["RoleJsonPath"];
+
+        // Read departments and roles
+        List<Department> departments = _jsonUtils.ReadJSON<Department>(departmentFilePath);
+        List<Role> roles = _jsonUtils.ReadJSON<Role>(roleFilePath);
+
+        // Filter roles based on the selected department
+        var department = departments.FirstOrDefault(d => d.Id == departmentId);
+        if (department == null)
+        {
+            _logger.LogError($"Department with ID '{departmentId}' not found.");
+            return null;
+        }
+
+        List<int> validRoleIds = roles.Where(role => role.DepartmentId == departmentId && role.Id != 0)
+                                  .Select(role => role.Id)
+                                  .Distinct()
+                                  .ToList();
+
+        if (validRoleIds.Count == 0)
+        {
+            _logger.LogWarning($"No roles found for the department '{department.DepartmentName}'.");
+            return null;
+        }
+
+        // Display valid roles for the selected department
+        PrintConsoleMessage($"\nValid roles for department '{department.DepartmentName}':\n", ConsoleColor.Cyan);
+        foreach (var validRoleId in validRoleIds)
+        {
+            var role = roles.FirstOrDefault(r => r.Id == validRoleId);
+            if (role != null)
+            {
+                PrintConsoleMessage($"- {role.RoleName}", ConsoleColor.Cyan);
+            }
+        }
+        PrintConsoleMessage("\n");
+
+        // Prompt user to select a role
+        string userInput;
+        int? roleId;
+        do
+        {
+            userInput = GetDataFromField("Role");
+            if (string.IsNullOrWhiteSpace(userInput)) return null;
+
+            roleId = FindIdInJson<Role>(userInput, roleFilePath);
+            if (!validRoleIds.Contains(roleId ?? -1))
+            {
+                _logger.LogError($"Invalid role. Please select from the roles listed for department '{department.DepartmentName}'.");
+            }
+        } while (!validRoleIds.Contains(roleId ?? -1));
+
+        return roleId;
+    }
+
+    private static int? GetIdFromUser<T>(string fieldName, string jsonFilePathKey, bool isRequired = false) where T : class
     {
         string filePath = GetIConfiguration()[jsonFilePathKey];
 
@@ -151,7 +229,7 @@ public partial class EMS
                         foreach (var property in properties)
                         {
                             object value = property.GetValue(item);
-                            PrintConsoleMessage($"{value}  ", false);
+                            PrintConsoleMessage($"{value}  ", ConsoleColor.Cyan, false);
                         }
                         PrintConsoleMessage("\n");
                     }
@@ -231,7 +309,7 @@ public partial class EMS
             string email = employee.Email ?? null;
             string mobileNumber = employee.MobileNumber ?? null;
             string locationName = employee.LocationName ?? null;
-            string jobTitle = employee.JobTitle ?? null;
+            string jobTitle = employee.RoleName ?? null;
             string departmentName = employee.DepartmentName ?? null;
 
             Console.WriteLine($" {employee.EmpNo}\t\t|{fullName,-20}\t|{employee.StatusName,-10}\t|{dob}\t|{email,-30}\t|{mobileNumber}\t|{locationName,-10}\t\t|{jobTitle,-30}\t|{departmentName}");
@@ -250,11 +328,11 @@ public partial class EMS
             MobileNumber = GetDataFromField("Mobile Number")!,
             JoiningDate = ParseNullableDate(GetDataFromField("Joining Date (YYYY-MM-DD)")),
             LocationId = GetIdFromUser<Location>("Location", "LocationJsonPath"),
-            JobTitle = GetDataFromField("Job Title")!,
-            DepartmentId = GetIdFromUser<Department>("Department", "DepartmentJsonPath"),
-            AssignManagerId = GetIdFromUser<Manager>("Assign Manager", "ManagerJsonPath"),
-            AssignProjectId = GetIdFromUser<Project>("Assign Project", "ProjectJsonPath")
+            DepartmentId = GetIdFromUser<Department>("Department", "DepartmentJsonPath")
         };
+        employee.RoleId = GetRoleIdFromUserForDepartment(employee.DepartmentId);
+        employee.AssignManagerId = GetIdFromUser<Manager>("Assign Manager", "ManagerJsonPath");
+        employee.AssignProjectId = GetIdFromUser<Project>("Assign Project", "ProjectJsonPath");
 
         return employee;
     }
@@ -297,7 +375,7 @@ public partial class EMS
 
     private static string? GetDataFromField(string message, bool isRequired = false)
     {
-        PrintConsoleMessage($"{message}: ", false);
+        PrintConsoleMessage($"{message}: ", ConsoleColor.White, false);
         string fieldInput = Console.ReadLine();
         if (isRequired && (string.IsNullOrEmpty(fieldInput) || string.IsNullOrWhiteSpace(fieldInput)))
         {
@@ -307,22 +385,28 @@ public partial class EMS
         return fieldInput;
     }
 
+    // Roles related partial functions
     private static partial Role GetRoleDataFromConsole()
     {
-        PrintConsoleMessage("Enter Role details:\n", true);
+        PrintConsoleMessage("Enter Role details:\n");
         bool required = true;
+
+        string roleFilePath = GetIConfiguration()["RoleJsonPath"];
+        List<Role> roles = _jsonUtils.ReadJSON<Role>(roleFilePath);
+
         Role role = new()
         {
-            RoleName = GetDataFromField("Role Name", required)!,
-            DepartmentId = GetIdFromUser<Department>("Department", "DepartmentJsonPath", required)
+            Id = roles.Count + 1,
+            DepartmentId = GetIdFromUser<Department>("Department", "DepartmentJsonPath", required),
+            RoleName = GetDataFromField("Role Name", required)!
         };
 
         return role;
     }
 
-
-    private static void PrintConsoleMessage(string message, bool newLine = true)
+    private static void PrintConsoleMessage(string message, ConsoleColor color = ConsoleColor.White, bool newLine = true)
     {
+        Console.ForegroundColor = color;
         if (newLine)
         {
             Console.WriteLine(message);
@@ -331,5 +415,6 @@ public partial class EMS
         {
             Console.Write(message);
         }
+        Console.ForegroundColor = ConsoleColor.White;
     }
 }

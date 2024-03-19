@@ -1,11 +1,11 @@
 [
   {
     "Id": 1,
-    "DepartmentName": "Engineering"
+    "DepartmentName": "IT"
   },
   {
     "Id": 2,
-    "DepartmentName": "IT"
+    "DepartmentName": "Marketing"
   },
   {
     "Id": 3,
@@ -17,14 +17,10 @@
   },
   {
     "Id": 5,
-    "DepartmentName": "Data Science"
+    "DepartmentName": "Sales"
   },
   {
     "Id": 6,
-    "DepartmentName": "Accounting"
-  },
-  {
-    "Id": 7,
-    "DepartmentName": "Sales"
+    "DepartmentName": "Customer Service"
   }
 ]

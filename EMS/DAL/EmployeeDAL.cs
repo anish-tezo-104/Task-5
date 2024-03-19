@@ -54,7 +54,7 @@ public class EmployeeDAL : IEmployeeDAL
         dbEmployee.MobileNumber = GetUpdatedValue(employee.MobileNumber, dbEmployee.MobileNumber);
         dbEmployee.JoiningDate = employee.JoiningDate ?? dbEmployee.JoiningDate;
         dbEmployee.LocationId = GetUpdatedValue(employee.LocationId, dbEmployee.LocationId);
-        dbEmployee.JobTitle = GetUpdatedValue(employee.JobTitle, dbEmployee.JobTitle);
+        dbEmployee.RoleId = GetUpdatedValue(employee.RoleId, dbEmployee.RoleId);
         dbEmployee.DepartmentId = GetUpdatedValue(employee.DepartmentId, dbEmployee.DepartmentId);
         dbEmployee.AssignManagerId = GetUpdatedValue(employee.AssignManagerId, dbEmployee.AssignManagerId);
         dbEmployee.AssignProjectId = GetUpdatedValue(employee.AssignProjectId, dbEmployee.AssignProjectId);
@@ -123,7 +123,8 @@ public class EmployeeDAL : IEmployeeDAL
             LocationId = employee.LocationId,
             LocationName = _dataManager.GetLocationName(employee.LocationId),
             JoiningDate = employee.JoiningDate,
-            JobTitle = employee.JobTitle,
+            RoleId = employee.RoleId,
+            RoleName = _dataManager.GetRoleName(employee.RoleId),
             DepartmentId = employee.DepartmentId,
             DepartmentName = _dataManager.GetDepartmentName(employee.DepartmentId),
             AssignManagerId = employee.AssignManagerId,

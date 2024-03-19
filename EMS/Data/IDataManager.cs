@@ -7,4 +7,5 @@ public interface IDataManager
     string GetDepartmentName(int? departmentId);
     string GetManagerName(int? managerId);
     string GetProjectName(int? projectId);
+    string GetRoleName(int? roleId);
 }

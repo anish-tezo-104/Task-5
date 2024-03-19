@@ -11,7 +11,7 @@ public class Employee
     public string? MobileNumber { get; set; } = string.Empty;
     public DateTime? JoiningDate { get; set; }
     public int? LocationId { get; set; }
-    public string? JobTitle { get; set; } = string.Empty;
+    public int? RoleId { get; set; }
     public int? DepartmentId { get; set; }
     public int? AssignManagerId { get; set; }
     public int? AssignProjectId { get; set; }
@@ -25,7 +25,7 @@ public class Employee
                $"Mobile Number: {MobileNumber}\n" +
                $"Joining Date: {(JoiningDate.HasValue ? JoiningDate.Value.ToShortDateString() : string.Empty)}\n" +
                $"LocationId: {LocationId}\n" +
-               $"Job Title: {JobTitle}\n" +
+               $"RoleId: {RoleId}\n" +
                $"DepartmentId: {DepartmentId}\n";
     }
 }

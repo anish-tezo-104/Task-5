@@ -300,7 +300,6 @@ public partial class EMS
     }
 
     // Roles Command Functions
-
     private static void AddRoles()
     {
         Role role = GetRoleDataFromConsole();
