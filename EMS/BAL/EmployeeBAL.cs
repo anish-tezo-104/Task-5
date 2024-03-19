@@ -7,7 +7,7 @@ public class EmployeeBAL : IEmployeeBAL
 {
     private readonly IEmployeeDAL _employeeDal;
     private readonly IDropdownDAL _dropdownDal;
-    public readonly ILogger _logger;
+    private readonly ILogger _logger;
 
     public EmployeeBAL(ILogger logger, IEmployeeDAL employeeDal, IDropdownDAL dropdownDAL)
     {
@@ -18,34 +18,14 @@ public class EmployeeBAL : IEmployeeBAL
 
     public List<EmployeeDetails>? GetAll()
     {
-        List<Employee> employees;
-        List<EmployeeDetails> employeeDetailsList = new List<EmployeeDetails>(); // Initialize list with new List<EmployeeDetails>()
+        List<EmployeeDetails> employeeDetailsList;
         try
         {
-            employees = _employeeDal.RetrieveAll();
-            if (employees == null || employees.Count == 0)
-            {
-                return new List<EmployeeDetails>(); // Return an empty list directly
-            }
-
-            // Fetch all dropdown data at once
-            Dictionary<int, string> locationNames = _dropdownDal.GetLocations();
-            Dictionary<int, string> roleNames = _dropdownDal.GetRoles();
-            Dictionary<int, string> departmentNames = _dropdownDal.GetDepartments();
-            Dictionary<int, string> managerNames = _dropdownDal.GetManagers();
-            Dictionary<int, string> projectNames = _dropdownDal.GetProjects();
-            Dictionary<int, string> statusNames = _dropdownDal.GetStatus();
-
-            foreach (var employee in employees)
-            {
-                EmployeeDetails employeeDetails = GetEmployeeDetails(employee, locationNames!, roleNames!, departmentNames!, managerNames!, projectNames!, statusNames!);
-                employeeDetailsList.Add(employeeDetails);
-            }
-
+            employeeDetailsList = GetEmployeeDetails();
         }
         catch (Exception)
         {
-            throw; // Rethrow the exception
+            throw; 
         }
         return employeeDetailsList;
     }
@@ -93,23 +73,10 @@ public class EmployeeBAL : IEmployeeBAL
 
     public List<EmployeeDetails>? SearchEmployees(EmployeeFilters keyword)
     {
-        List<Employee> employees;
         List<EmployeeDetails> employeeDetailsList, resultEmployees;
         try
         {
-            Dictionary<int, string> locationNames = _dropdownDal.GetLocations();
-            Dictionary<int, string> roleNames = _dropdownDal.GetRoles();
-            Dictionary<int, string> departmentNames = _dropdownDal.GetDepartments();
-            Dictionary<int, string> managerNames = _dropdownDal.GetManagers();
-            Dictionary<int, string> projectNames = _dropdownDal.GetProjects();
-            Dictionary<int, string> statusNames = _dropdownDal.GetStatus();
-
-            employees = _employeeDal.RetrieveAll();
-            if (employees == null || employees.Count == 0)
-            {
-                return [];
-            }
-            employeeDetailsList = employees.Select(employee => GetEmployeeDetails(employee, locationNames!, roleNames!, departmentNames!, managerNames!, projectNames!, statusNames!)).ToList();
+            employeeDetailsList =  employeeDetailsList = GetEmployeeDetails();
             resultEmployees = _employeeDal.Filter(keyword, employeeDetailsList);
         }
         catch (Exception)
@@ -122,23 +89,10 @@ public class EmployeeBAL : IEmployeeBAL
 
     public List<EmployeeDetails>? FilterEmployees(EmployeeFilters filters)
     {
-        List<Employee> employees;
         List<EmployeeDetails> employeeDetailsList, filteredEmployees;
         try
         {
-            Dictionary<int, string> locationNames = _dropdownDal.GetLocations();
-            Dictionary<int, string> roleNames = _dropdownDal.GetRoles();
-            Dictionary<int, string> departmentNames = _dropdownDal.GetDepartments();
-            Dictionary<int, string> managerNames = _dropdownDal.GetManagers();
-            Dictionary<int, string> projectNames = _dropdownDal.GetProjects();
-            Dictionary<int, string> statusNames = _dropdownDal.GetStatus();
-
-            employees = _employeeDal.RetrieveAll();
-            if (employees == null || employees.Count == 0)
-            {
-                return [];
-            }
-            employeeDetailsList = employees.Select(employee => GetEmployeeDetails(employee, locationNames!, roleNames!, departmentNames!, managerNames!, projectNames!, statusNames!)).ToList();
+            employeeDetailsList = GetEmployeeDetails();
             filteredEmployees = _employeeDal.Filter(filters, employeeDetailsList);
         }
         catch (Exception)
@@ -154,7 +108,27 @@ public class EmployeeBAL : IEmployeeBAL
         return _employeeDal.Count();
     }
 
-    private static EmployeeDetails GetEmployeeDetails(Employee employee, Dictionary<int, string> locationNames, Dictionary<int, string> roleNames, Dictionary<int, string> departmentNames, Dictionary<int, string> managerNames, Dictionary<int, string> projectNames, Dictionary<int, string> statusNames)
+    private List<EmployeeDetails> GetEmployeeDetails()
+    {
+        List<Employee> employees;
+        List<EmployeeDetails> employeeDetailsList;
+        Dictionary<int, string> locationNames = _dropdownDal.GetLocations();
+        Dictionary<int, string> roleNames = _dropdownDal.GetRoles();
+        Dictionary<int, string> departmentNames = _dropdownDal.GetDepartments();
+        Dictionary<int, string> managerNames = _dropdownDal.GetManagers();
+        Dictionary<int, string> projectNames = _dropdownDal.GetProjects();
+        Dictionary<int, string> statusNames = _dropdownDal.GetStatus();
+
+        employees = _employeeDal.RetrieveAll();
+        if (employees == null || employees.Count == 0)
+        {
+            return [];
+        }
+        employeeDetailsList = employees.Select(employee => PopulateEmployeeDetails(employee, locationNames!, roleNames!, departmentNames!, managerNames!, projectNames!, statusNames!)).ToList();
+        return employeeDetailsList;
+    }
+
+    private static EmployeeDetails PopulateEmployeeDetails(Employee employee, Dictionary<int, string> locationNames, Dictionary<int, string> roleNames, Dictionary<int, string> departmentNames, Dictionary<int, string> managerNames, Dictionary<int, string> projectNames, Dictionary<int, string> statusNames)
     {
         EmployeeDetails employeeDetails = new EmployeeDetails()
         {

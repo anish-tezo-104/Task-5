@@ -64,7 +64,7 @@ public class EmployeeDAL : IEmployeeDAL
         {
             existingEmployees.Remove(employeeToDelete);
             _jsonUtils.WriteJSON(existingEmployees, _filePath);
-            
+
         }
         return true;
     }
@@ -161,7 +161,9 @@ public class EmployeeDAL : IEmployeeDAL
             e.LastName?.Contains(keyword, StringComparison.CurrentCultureIgnoreCase) == true ||
             e.LocationName?.Contains(keyword, StringComparison.CurrentCultureIgnoreCase) == true ||
             e.DepartmentName?.Contains(keyword, StringComparison.CurrentCultureIgnoreCase) == true ||
-            e.StatusName?.Contains(keyword, StringComparison.CurrentCultureIgnoreCase) == true).ToList();
+            e.StatusName?.Contains(keyword, StringComparison.CurrentCultureIgnoreCase) == true ||
+            e.RoleName?.Contains(keyword, StringComparison.CurrentCultureIgnoreCase) == true
+            ).ToList();
     }
 
     private static T? GetUpdatedValue<T>(T? newValue, T? oldValue)
