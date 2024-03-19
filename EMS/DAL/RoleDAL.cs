@@ -8,7 +8,7 @@ public class RoleDAL : IRoleDAL
 {
     private readonly string _filePath = "";
     private readonly JSONUtils _jsonUtils;
-    public readonly ILogger _logger;
+    private readonly ILogger _logger;
     private readonly IConfiguration _configuration;
 
     public RoleDAL(ILogger logger, JSONUtils jsonUtils, IConfiguration configuration)
