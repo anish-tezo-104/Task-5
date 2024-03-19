@@ -16,4 +16,5 @@ public class Constants
     public const string CountEmployeesSuccess = "Total Employees: ";
     public const string GettingDataFromConsoleError = "Error retrieving data from console.";
     public const string AddRoleSuccess = "Role added successfully.";
+    public const string RetrieveAllRolesSuccess = "Role(s) retrieved successfully.";
 }

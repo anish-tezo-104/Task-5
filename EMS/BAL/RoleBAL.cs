@@ -28,4 +28,18 @@ public class RoleBAL : IRoleBAL
         }
         return status;
     }
+
+    public List<Role>? GetAll()
+    {
+        List<Role> roles;
+        try
+        {
+            roles = _roleDal.RetrieveAll();
+        }
+        catch (Exception)
+        {
+            throw;
+        }
+        return roles;
+    }
 }

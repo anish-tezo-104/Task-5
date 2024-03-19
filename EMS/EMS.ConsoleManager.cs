@@ -365,14 +365,6 @@ public partial class EMS
         }
     }
 
-    private static void PrintEmployeesTableHeader()
-    {
-        Console.WriteLine("\nEmployee Details:\n");
-        Console.WriteLine("-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------");
-        Console.WriteLine(" Employee ID\t|Name\t\t\t|Status\t\t|Date of Birth\t|Email\t\t\t\t|Mobile Number\t|Location\t\t|Job Title\t\t\t|Department");
-        Console.WriteLine("-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------");
-    }
-
     private static string? GetDataFromField(string message, bool isRequired = false)
     {
         PrintConsoleMessage($"{message}: ", ConsoleColor.White, false);
@@ -383,6 +375,14 @@ public partial class EMS
             return GetDataFromField(message, isRequired);
         }
         return fieldInput;
+    }
+
+    private static void PrintEmployeesTableHeader()
+    {
+        Console.WriteLine("\nEmployee Details:\n");
+        Console.WriteLine("-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------");
+        Console.WriteLine(" Employee ID\t|Name\t\t\t|Status\t\t|Date of Birth\t|Email\t\t\t\t|Mobile Number\t|Location\t\t|Job Title\t\t\t|Department");
+        Console.WriteLine("-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------");
     }
 
     // Roles related partial functions
@@ -402,6 +402,27 @@ public partial class EMS
         };
 
         return role;
+    }
+
+    private static void PrintRolesTableHeader()
+    {
+        Console.WriteLine("\nRoles Details:\n");
+        Console.WriteLine("------------------------------------------------------------------------------------");
+        Console.WriteLine(" Role ID\t|Role Name\t\t\t|Department Name");
+        Console.WriteLine("------------------------------------------------------------------------------------");
+    }
+
+    private static partial void PrintRoles(List<Role> roles)
+    {
+        PrintRolesTableHeader();
+        foreach (Role role in roles)
+        {
+            int id = role.Id;
+            string roleName = role.RoleName;
+            string departmentName = _dataManager.GetDepartmentName(role.DepartmentId);
+            Console.WriteLine($" {id}\t\t|{roleName,-30}\t|{departmentName}");
+        }
+        Console.WriteLine("----------------------------------------------------------------------------------------\n");
     }
 
     private static void PrintConsoleMessage(string message, ConsoleColor color = ConsoleColor.White, bool newLine = true)

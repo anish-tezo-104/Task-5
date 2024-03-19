@@ -26,4 +26,14 @@ public class RoleDAL : IRoleDAL
         _jsonUtils.WriteJSON(existingRoles, _filePath);
         return true;
     }
+
+    public List<Role>? RetrieveAll()
+    {
+        List<Role> roles = _jsonUtils.ReadJSON<Role>(_filePath);
+        if (roles == null || roles.Count == 0)
+        {
+            return [];
+        }
+        return roles;
+    }
 }

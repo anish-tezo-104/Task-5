@@ -30,6 +30,7 @@ public partial class EMS
     private static partial EmployeeFilters? GetEmployeeFiltersFromConsole();
     private static partial EmployeeFilters? GetSearchKeywordFromConsole();
     private static partial Employee GetUpdatedDataFromUser();
+    private static partial void PrintRoles(List<Role> roles);
 
     static EMS()
     {
@@ -95,6 +96,11 @@ public partial class EMS
             Handler = CommandHandler.Create(() => AddRoles())
         };
 
+        var showRolesCommand = new Command("--show-role", "Show roles list")
+        {
+            Handler = CommandHandler.Create(() => DisplayRoles())
+        };
+
         rootCommand.AddOption(new Option<string>("-o", "Display all operations"));
         rootCommand.AddCommand(addEmployeesCommand);
         rootCommand.AddCommand(showEmployeesCommand);
@@ -105,6 +111,7 @@ public partial class EMS
         rootCommand.AddCommand(countEmployees);
 
         rootCommand.AddCommand(addRolesCommand);
+        rootCommand.AddCommand(showRolesCommand);
 
         if (args.Length == 1 && (args[0] == "-o" || args[0] == "-options"))
         {
@@ -314,6 +321,26 @@ public partial class EMS
             _logger.LogSuccess(Constants.AddRoleSuccess);
         }
         else
+        {
+            _logger.LogError(Constants.ExceptionMessage);
+        }
+    }
+
+    private static void DisplayRoles()
+    {
+        try
+        {
+            List<Role> roles = _roleBal.GetAll();
+            if (roles!= null)
+            {
+                _logger.LogSuccess($"{roles.Count} {Constants.RetrieveAllRolesSuccess}");
+                if (roles.Count > 0)
+                {
+                    PrintRoles(roles);
+                }
+            }
+        }
+        catch (Exception)
         {
             _logger.LogError(Constants.ExceptionMessage);
         }
