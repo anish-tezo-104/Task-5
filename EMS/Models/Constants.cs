@@ -17,4 +17,5 @@ public class Constants
     public const string GettingDataFromConsoleError = "Error retrieving data from console.";
     public const string AddRoleSuccess = "Role added successfully.";
     public const string RetrieveAllRolesSuccess = "Role(s) retrieved successfully.";
+    public const string DropdownListError = "Error occurred while retrieving dropdown list.";
 }

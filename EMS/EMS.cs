@@ -5,7 +5,6 @@ using EmployeeManagementSystem.Utils;
 using EmployeeManagementSystem.DAL;
 using EmployeeManagementSystem.BAL;
 using EmployeeManagementSystem.Models;
-using EmployeeManagementSystem.Data;
 
 namespace EmployeeManagementSystem;
 
@@ -15,12 +14,10 @@ public partial class EMS
     private readonly static IRoleDAL _roleDal;
     private readonly static IEmployeeBAL _employeeBal;
     private readonly static IRoleBAL _roleBal;
-
-    private readonly static DataManager _dataManager;
     private static JSONUtils _jsonUtils;
     private static readonly ILogger _logger;
-    private static readonly string _employeeJsonPath;
-    private static readonly string _roleJsonPath;
+    private static readonly DropdownDAL _dropdownDal;
+    private static readonly IConfiguration _configuration;
 
     private static partial Employee GetEmployeeDataFromConsole();
     private static partial Role GetRoleDataFromConsole();
@@ -34,16 +31,14 @@ public partial class EMS
 
     static EMS()
     {
+        _configuration = GetIConfiguration();
         _jsonUtils = new JSONUtils();
         _logger = new ConsoleLogger();
-        _dataManager = new DataManager(GetIConfiguration());
-        _employeeJsonPath = GetIConfiguration()["EmployeesJsonPath"];
-        _roleJsonPath = GetIConfiguration()["RoleJsonPath"];
-        _employeeDal = new EmployeeDAL(_logger, _jsonUtils, _employeeJsonPath, _dataManager);
-        _roleDal = new RoleDAL(_logger, _jsonUtils, _roleJsonPath, _dataManager);
-        _employeeBal = new EmployeeBAL(_logger, _employeeDal);
-        _roleBal = new RoleBAL(_logger, _roleDal);
-        _roleDal = new RoleDAL(_logger, _jsonUtils, _roleJsonPath, _dataManager);
+        _dropdownDal = new DropdownDAL(_configuration);
+        _employeeDal = new EmployeeDAL(_logger, _jsonUtils, _configuration);
+        _roleDal = new RoleDAL(_logger, _jsonUtils, _configuration);
+        _employeeBal = new EmployeeBAL(_logger, _employeeDal, _dropdownDal);
+        _roleBal = new RoleBAL(_logger, _roleDal, _dropdownDal);
     }
 
     public static int Main(string[] args)
@@ -331,7 +326,7 @@ public partial class EMS
         try
         {
             List<Role> roles = _roleBal.GetAll();
-            if (roles!= null)
+            if (roles != null)
             {
                 _logger.LogSuccess($"{roles.Count} {Constants.RetrieveAllRolesSuccess}");
                 if (roles.Count > 0)

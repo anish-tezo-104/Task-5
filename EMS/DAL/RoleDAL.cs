@@ -1,6 +1,6 @@
-using EmployeeManagementSystem.Data;
 using EmployeeManagementSystem.Models;
 using EmployeeManagementSystem.Utils;
+using Microsoft.Extensions.Configuration;
 
 namespace EmployeeManagementSystem.DAL;
 
@@ -9,14 +9,14 @@ public class RoleDAL : IRoleDAL
     private readonly string _filePath = "";
     private readonly JSONUtils _jsonUtils;
     public readonly ILogger _logger;
-    public readonly IDataManager _dataManager;
+    private readonly IConfiguration _configuration;
 
-    public RoleDAL(ILogger logger, JSONUtils jsonUtils, string filePath, IDataManager dataManager)
+    public RoleDAL(ILogger logger, JSONUtils jsonUtils, IConfiguration configuration)
     {
         _jsonUtils = jsonUtils;
         _logger = logger;
-        _filePath = filePath;
-        _dataManager = dataManager;
+        _configuration = configuration;
+        _filePath = _configuration["RoleJsonPath"];
     }
 
     public bool Insert(Role role)

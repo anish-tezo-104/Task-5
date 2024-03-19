@@ -58,7 +58,8 @@ public partial class EMS
 
     private static bool IsEmpNoDuplicate(string empNo)
     {
-        List<Employee> employees = _jsonUtils.ReadJSON<Employee>(_employeeJsonPath);
+        string employeeJsonPath = _configuration["EmployeeJsonPath"];
+        List<Employee> employees = _jsonUtils.ReadJSON<Employee>(employeeJsonPath);
         return employees.Any(x => x.EmpNo == empNo);
     }
 
@@ -260,7 +261,11 @@ public partial class EMS
                 break;
             }
 
-            var filterValues = input.Split(',').Select(value => value);
+            var filterValues = input.Split(',').Select(value => value.Trim());
+            if (!filterValues.Any(value => !string.IsNullOrEmpty(value)))
+            {
+                break;
+            }
 
             foreach (var filterValue in filterValues)
             {
@@ -285,36 +290,6 @@ public partial class EMS
         filters.Search = Console.ReadLine()?.Trim();
 
         return filters;
-    }
-
-    private static void ResetFilters(EmployeeFilters Filters)
-    {
-        if (Filters != null)
-        {
-            Filters.Alphabet = [];
-            Filters.Locations = [];
-            Filters.Departments = [];
-            Filters.Status = [];
-            Filters.Search = "";
-        }
-    }
-
-    private static partial void PrintEmployeesDetails(List<EmployeeDetails> employees)
-    {
-        PrintEmployeesTableHeader();
-        foreach (EmployeeDetails employee in employees)
-        {
-            string fullName = $"{employee.FirstName ?? null} {employee.LastName ?? null}";
-            string dob = employee.Dob?.ToString("dd-MM-yyyy") ?? null;
-            string email = employee.Email ?? null;
-            string mobileNumber = employee.MobileNumber ?? null;
-            string locationName = employee.LocationName ?? null;
-            string jobTitle = employee.RoleName ?? null;
-            string departmentName = employee.DepartmentName ?? null;
-
-            Console.WriteLine($" {employee.EmpNo}\t\t|{fullName,-20}\t|{employee.StatusName,-10}\t|{dob}\t|{email,-30}\t|{mobileNumber}\t|{locationName,-10}\t\t|{jobTitle,-30}\t|{departmentName}");
-        }
-        Console.WriteLine("-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------\n");
     }
 
     private static partial Employee GetUpdatedDataFromUser()
@@ -377,6 +352,36 @@ public partial class EMS
         return fieldInput;
     }
 
+    private static void ResetFilters(EmployeeFilters Filters)
+    {
+        if (Filters != null)
+        {
+            Filters.Alphabet = [];
+            Filters.Locations = [];
+            Filters.Departments = [];
+            Filters.Status = [];
+            Filters.Search = "";
+        }
+    }
+
+    private static partial void PrintEmployeesDetails(List<EmployeeDetails> employees)
+    {
+        PrintEmployeesTableHeader();
+        foreach (EmployeeDetails employee in employees)
+        {
+            string fullName = $"{employee.FirstName ?? null} {employee.LastName ?? null}";
+            string dob = employee.Dob?.ToString("dd-MM-yyyy") ?? null;
+            string email = employee.Email ?? null;
+            string mobileNumber = employee.MobileNumber ?? null;
+            string locationName = employee.LocationName ?? null;
+            string jobTitle = employee.RoleName ?? null;
+            string departmentName = employee.DepartmentName ?? null;
+
+            Console.WriteLine($" {employee.EmpNo}\t\t|{fullName,-20}\t|{employee.StatusName,-10}\t|{dob}\t|{email,-30}\t|{mobileNumber}\t|{locationName,-10}\t\t|{jobTitle,-30}\t|{departmentName}");
+        }
+        Console.WriteLine("-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------\n");
+    }
+
     private static void PrintEmployeesTableHeader()
     {
         Console.WriteLine("\nEmployee Details:\n");
@@ -414,15 +419,25 @@ public partial class EMS
 
     private static partial void PrintRoles(List<Role> roles)
     {
-        PrintRolesTableHeader();
-        foreach (Role role in roles)
+        Dictionary<int, string>? departmentNames = _dropdownDal.GetDepartments();
+
+        if (departmentNames != null)
         {
-            int id = role.Id;
-            string roleName = role.RoleName;
-            string departmentName = _dataManager.GetDepartmentName(role.DepartmentId);
-            Console.WriteLine($" {id}\t\t|{roleName,-30}\t|{departmentName}");
+            PrintRolesTableHeader();
+            foreach (Role role in roles)
+            {
+                int id = role.Id;
+                string roleName = role.RoleName;
+                int departmentId = role.DepartmentId ?? 0;
+                string? departmentName = departmentNames.TryGetValue(departmentId, out string? value) ? value : null;
+                Console.WriteLine($" {id}\t\t|{roleName,-30}\t|{departmentName}");
+            }
+            Console.WriteLine("--------------------------------------------------------------------------------------\n");
         }
-        Console.WriteLine("--------------------------------------------------------------------------------------\n");
+        else
+        {
+            _logger.LogError(Constants.DropdownListError);
+        }
     }
 
     private static void PrintConsoleMessage(string message, ConsoleColor color = ConsoleColor.White, bool newLine = true)

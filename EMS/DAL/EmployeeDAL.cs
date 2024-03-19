@@ -1,21 +1,21 @@
 using EmployeeManagementSystem.Utils;
 using EmployeeManagementSystem.Models;
-using EmployeeManagementSystem.Data;
+using Microsoft.Extensions.Configuration;
 namespace EmployeeManagementSystem.DAL;
 
 public class EmployeeDAL : IEmployeeDAL
 {
     private readonly string _filePath = "";
     private readonly JSONUtils _jsonUtils;
-    public readonly ILogger _logger;
-    public readonly IDataManager _dataManager;
+    private readonly ILogger _logger;
+    private readonly IConfiguration _configuration;
 
-    public EmployeeDAL(ILogger logger, JSONUtils jsonUtils, string filePath, IDataManager dataManager)
+    public EmployeeDAL(ILogger logger, JSONUtils jsonUtils, IConfiguration configuration)
     {
         _jsonUtils = jsonUtils;
         _logger = logger;
-        _filePath = filePath;
-        _dataManager = dataManager;
+        _configuration = configuration;
+        _filePath = _configuration["EmployeesJsonPath"];
     }
 
     public bool Insert(Employee employee)
@@ -26,21 +26,14 @@ public class EmployeeDAL : IEmployeeDAL
         return true;
     }
 
-    public List<EmployeeDetails>? RetrieveAll()
+    public List<Employee>? RetrieveAll()
     {
-        List<Employee> existingEmployees = _jsonUtils.ReadJSON<Employee>(_filePath);
-        if (existingEmployees == null || existingEmployees.Count == 0)
+        List<Employee> employees = _jsonUtils.ReadJSON<Employee>(_filePath);
+        if (employees == null || employees.Count == 0)
         {
             return [];
         }
-        List<EmployeeDetails> employeeDetailsList = new List<EmployeeDetails>();
-
-        foreach (var employee in existingEmployees)
-        {
-            EmployeeDetails employeeDetails = GetEmployeeDetails(employee, _dataManager);
-            employeeDetailsList.Add(employeeDetails);
-        }
-        return employeeDetailsList;
+        return employees;
     }
 
     public bool Update(string empNo, Employee employee)
@@ -76,11 +69,8 @@ public class EmployeeDAL : IEmployeeDAL
         return true;
     }
 
-    public List<EmployeeDetails>? Filter(EmployeeFilters? filters)
+    public List<EmployeeDetails>? Filter(EmployeeFilters? filters, List<EmployeeDetails> employeeDetailsList)
     {
-        List<Employee> employees = _jsonUtils.ReadJSON<Employee>(_filePath);
-        List<EmployeeDetails> employeeDetailsList = employees.Select(employee => GetEmployeeDetails(employee, _dataManager)).ToList();
-
         if (filters != null)
         {
             // Apply filters
@@ -95,7 +85,7 @@ public class EmployeeDAL : IEmployeeDAL
 
         if (employeeDetailsList.Count == 0)
         {
-            return new List<EmployeeDetails>(); // Return an empty list
+            return []; // Return an empty list
         }
 
         return employeeDetailsList;
@@ -108,29 +98,23 @@ public class EmployeeDAL : IEmployeeDAL
         return count;
     }
 
-    private static EmployeeDetails GetEmployeeDetails(Employee employee, IDataManager _dataManager)
+    private static EmployeeDetails GetEmployeeDetails(Employee employee)
     {
         EmployeeDetails employeeDetails = new()
         {
             EmpNo = employee.EmpNo,
             StatusId = employee.StatusId,
-            StatusName = _dataManager.GetStatusName(employee.StatusId),
             FirstName = employee.FirstName,
             LastName = employee.LastName,
             Dob = employee.Dob,
             Email = employee.Email,
             MobileNumber = employee.MobileNumber,
             LocationId = employee.LocationId,
-            LocationName = _dataManager.GetLocationName(employee.LocationId),
             JoiningDate = employee.JoiningDate,
             RoleId = employee.RoleId,
-            RoleName = _dataManager.GetRoleName(employee.RoleId),
             DepartmentId = employee.DepartmentId,
-            DepartmentName = _dataManager.GetDepartmentName(employee.DepartmentId),
             AssignManagerId = employee.AssignManagerId,
-            AssignManagerName = _dataManager.GetManagerName(employee.AssignManagerId),
             AssignProjectId = employee.AssignProjectId,
-            AssignProjectName = _dataManager.GetProjectName(employee.AssignProjectId)
         };
         return employeeDetails;
     }

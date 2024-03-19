@@ -7,12 +7,14 @@ namespace EmployeeManagementSystem.BAL;
 public class RoleBAL : IRoleBAL
 {
     private readonly IRoleDAL _roleDal;
-    public readonly ILogger _logger;
+    private readonly ILogger _logger;
+    private readonly IDropdownDAL _dropdownDAL;
 
-    public RoleBAL(ILogger logger, IRoleDAL roleDal)
+    public RoleBAL(ILogger logger, IRoleDAL roleDal, IDropdownDAL dropdownDAL)
     {
         _roleDal = roleDal;
         _logger = logger;
+        _dropdownDAL = dropdownDAL;
     }
 
     public bool AddRole(Role role)
