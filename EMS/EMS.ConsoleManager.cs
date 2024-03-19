@@ -422,7 +422,7 @@ public partial class EMS
             string departmentName = _dataManager.GetDepartmentName(role.DepartmentId);
             Console.WriteLine($" {id}\t\t|{roleName,-30}\t|{departmentName}");
         }
-        Console.WriteLine("----------------------------------------------------------------------------------------\n");
+        Console.WriteLine("--------------------------------------------------------------------------------------\n");
     }
 
     private static void PrintConsoleMessage(string message, ConsoleColor color = ConsoleColor.White, bool newLine = true)
