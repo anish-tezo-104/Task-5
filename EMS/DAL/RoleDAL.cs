@@ -16,7 +16,7 @@ public class RoleDAL : IRoleDAL
         _jsonUtils = jsonUtils;
         _logger = logger;
         _configuration = configuration;
-        _filePath = _configuration["RoleJsonPath"];
+        _filePath = _configuration["BasePath"] + _configuration["RoleJsonPath"];
     }
 
     public bool Insert(Role role)

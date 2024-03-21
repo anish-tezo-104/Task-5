@@ -15,7 +15,7 @@ public class EmployeeDAL : IEmployeeDAL
         _jsonUtils = jsonUtils;
         _logger = logger;
         _configuration = configuration;
-        _filePath = _configuration["EmployeesJsonPath"];
+        _filePath = _configuration["BasePath"] + _configuration["EmployeesJsonPath"];
     }
 
     public bool Insert(Employee employee)
@@ -41,7 +41,6 @@ public class EmployeeDAL : IEmployeeDAL
         {
             return new List<EmployeeDetails>();
         }
-
         return employees;
     }
 

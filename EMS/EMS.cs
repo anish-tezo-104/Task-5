@@ -158,6 +158,7 @@ public partial class EMS
 
     private static void DisplayEmployees()
     {
+        Console.WriteLine(_configuration["BasePath"] + _configuration["LocationJsonPath"]);
         try
         {
             List<EmployeeDetails> employees = _employeeBal.GetAll();

@@ -45,7 +45,7 @@ public class DropdownDAL : IDropdownDAL
 
     private T? LoadDataToList<T>(string jsonFilePathKey)
     {
-        string jsonFilePath = _configuration[jsonFilePathKey];
+        string jsonFilePath = _configuration["BasePath"] + _configuration[jsonFilePathKey];
         if (string.IsNullOrEmpty(jsonFilePath))
         {
             throw new ArgumentException($"{jsonFilePathKey} is not configured.");

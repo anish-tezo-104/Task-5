@@ -58,15 +58,15 @@ public partial class EMS
 
     private static bool IsEmpNoDuplicate(string empNo)
     {
-        string employeeJsonPath = _configuration["EmployeeJsonPath"];
+        string employeeJsonPath = _configuration["BasePath"] + _configuration["EmployeeJsonPath"];
         List<Employee> employees = _jsonUtils.ReadJSON<Employee>(employeeJsonPath);
         return employees.Any(x => x.EmpNo == empNo);
     }
 
     private static int? GetRoleIdFromUserForDepartment(int? departmentId)
     {
-        string departmentFilePath = GetIConfiguration()["DepartmentJsonPath"];
-        string roleFilePath = GetIConfiguration()["RoleJsonPath"];
+        string departmentFilePath = _configuration["BasePath"] + _configuration["DepartmentJsonPath"];
+        string roleFilePath = _configuration["BasePath"] + _configuration["RoleJsonPath"];
 
         // Read departments and roles
         List<Dropdown> departments = _jsonUtils.ReadJSON<Dropdown>(departmentFilePath);
@@ -123,7 +123,7 @@ public partial class EMS
 
     private static int? GetIdFromUser<T>(string fieldName, string jsonFilePathKey, bool isRequired = false) where T : class
     {
-        string filePath = GetIConfiguration()[jsonFilePathKey];
+        string filePath = _configuration["BasePath"] + _configuration[jsonFilePathKey];
 
         string userInput;
         int? id;
@@ -191,9 +191,9 @@ public partial class EMS
 
     private static partial EmployeeFilters? GetEmployeeFiltersFromConsole()
     {
-        DisplayJsonOptions<Dropdown>(GetIConfiguration()["LocationJsonPath"], "Location");
-        DisplayJsonOptions<Dropdown>(GetIConfiguration()["DepartmentJsonPath"], "Department");
-        DisplayJsonOptions<Dropdown>(GetIConfiguration()["StatusJsonPath"], "Status");
+        DisplayJsonOptions<Dropdown>(_configuration["BasePath"] + _configuration["LocationJsonPath"], "Location");
+        DisplayJsonOptions<Dropdown>(_configuration["BasePath"] + _configuration["DepartmentJsonPath"], "Department");
+        DisplayJsonOptions<Dropdown>(_configuration["BasePath"] + _configuration["StatusJsonPath"], "Status");
 
         EmployeeFilters filters = new();
         PrintConsoleMessage("\nEnter the filter criteria:\n\n");
@@ -251,7 +251,7 @@ public partial class EMS
     {
         string input;
         ids = [];
-        string filePath = GetIConfiguration()[jsonFilePathKey];
+        string filePath = _configuration["BasePath"] + _configuration[jsonFilePathKey];
         do
         {
             input = GetDataFromField(fieldName);
@@ -396,7 +396,7 @@ public partial class EMS
         PrintConsoleMessage("Enter Role details:\n");
         bool required = true;
 
-        string roleFilePath = GetIConfiguration()["RoleJsonPath"];
+        string roleFilePath = _configuration["BasePath"] + _configuration["RoleJsonPath"];
         List<Role> roles = _jsonUtils.ReadJSON<Role>(roleFilePath);
 
         Role role = new()
