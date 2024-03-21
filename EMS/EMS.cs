@@ -12,11 +12,12 @@ public partial class EMS
 {
     private readonly static IEmployeeDAL _employeeDal;
     private readonly static IRoleDAL _roleDal;
+    private readonly static IDropdownDAL _dropdownDal;
     private readonly static IEmployeeBAL _employeeBal;
+    private readonly static IDropdownBAL _dropdownBal;
     private readonly static IRoleBAL _roleBal;
     private static JSONUtils _jsonUtils;
     private static readonly ILogger _logger;
-    private static readonly DropdownDAL _dropdownDal;
     private static readonly IConfiguration _configuration;
 
     private static partial Employee GetEmployeeDataFromConsole();
@@ -32,12 +33,13 @@ public partial class EMS
     static EMS()
     {
         _configuration = GetIConfiguration();
-        _jsonUtils = new JSONUtils();
         _logger = new ConsoleLogger();
+        _jsonUtils = new JSONUtils();
         _dropdownDal = new DropdownDAL(_configuration);
+        _dropdownBal = new DropdownBAL(_dropdownDal);
         _employeeDal = new EmployeeDAL(_logger, _jsonUtils, _configuration);
         _roleDal = new RoleDAL(_logger, _jsonUtils, _configuration);
-        _employeeBal = new EmployeeBAL(_logger, _employeeDal, _dropdownDal);
+        _employeeBal = new EmployeeBAL(_logger, _employeeDal, _dropdownBal);
         _roleBal = new RoleBAL(_logger, _roleDal, _dropdownDal);
     }
 
@@ -64,17 +66,17 @@ public partial class EMS
             Handler = CommandHandler.Create(() => FilterEmployees())
         };
         var deleteEmployeesCommand = new Command("--delete-emp", "Delete an employee [Input : Employee Number]")
-    {
-        new Argument<string>("empNo", "EmployeeNumber")
-    };
+        {
+            new Argument<string>("empNo", "EmployeeNumber")
+        };
         deleteEmployeesCommand.Handler = CommandHandler.Create((string empNo) => DeleteEmployee(empNo));
-
-        var updateEmployeesCommand = new Command("--update-emp", "Update an employee detail"){
-        new Argument<string>("empNo", "EmployeeNumber")
-    };
+        var updateEmployeesCommand = new Command("--update-emp", "Update an employee detail")
+        {
+            new Argument<string>("empNo", "EmployeeNumber")
+        };
         updateEmployeesCommand.Handler = CommandHandler.Create((string empNo) => UpdateEmployee(empNo));
 
-        var searchEmployeesCommand = new Command("--search-emp", "Search an employee details")
+        var searchEmployeesCommand = new Command("--search-emp", "Search an employee details [Employee Number, Employee Name]")
         {
             Handler = CommandHandler.Create(() => SearchEmployee())
         };
@@ -130,20 +132,27 @@ public partial class EMS
 
     private static void AddEmployee()
     {
-        Employee employee = GetEmployeeDataFromConsole();
-        if (employee == null)
+        try
         {
-            _logger.LogError(Constants.GettingDataFromConsoleError);
-            return;
+            Employee employee = GetEmployeeDataFromConsole();
+            if (employee == null)
+            {
+                PrintError(Constants.GettingDataFromConsoleError);
+                return;
+            }
+            bool status = _employeeBal.AddEmployee(employee);
+            if (status)
+            {
+                PrintSuccess(Constants.AddEmployeeSuccess);
+            }
+            else
+            {
+                PrintError(Constants.ErrorMessage);
+            }
         }
-        bool status = _employeeBal.AddEmployee(employee);
-        if (status)
+        catch (Exception ex)
         {
-            _logger.LogSuccess(Constants.AddEmployeeSuccess);
-        }
-        else
-        {
-            _logger.LogError(Constants.ExceptionMessage);
+            _logger.LogError($"{Constants.ErrorMessage} : {ex.Message}");
         }
     }
 
@@ -154,48 +163,46 @@ public partial class EMS
             List<EmployeeDetails> employees = _employeeBal.GetAll();
             if (employees != null)
             {
-                _logger.LogSuccess($"{employees.Count} {Constants.RetrieveAllEmployeesSuccess}");
+                PrintSuccess($"{employees.Count} {Constants.RetrieveAllEmployeesSuccess}");
                 if (employees.Count > 0)
                 {
                     PrintEmployeesDetails(employees);
                 }
             }
         }
-        catch (Exception)
+        catch (Exception ex)
         {
-            _logger.LogError(Constants.ExceptionMessage);
+            _logger.LogError($"{Constants.ErrorMessage} : {ex.Message}");
         }
     }
 
     private static void DeleteEmployee(string empNo)
     {
-        List<EmployeeDetails> employees;
         try
         {
+            List<EmployeeDetails> employees;
             var filters = new EmployeeFilters { Search = empNo };
             employees = _employeeBal.SearchEmployees(filters);
-        }
-        catch (Exception)
-        {
-            _logger.LogError(Constants.ExceptionMessage);
-            return;
-        }
 
-        if (employees == null || employees.Count == 0)
-        {
-            _logger.LogSuccess(Constants.EmpNoNotFound);
-            return;
-        }
+            if (employees == null || employees.Count == 0)
+            {
+                PrintSuccess(Constants.EmpNoNotFound);
+                return;
+            }
 
-        bool status = _employeeBal.DeleteEmployees(empNo);
-        if (status)
-        {
-            _logger.LogSuccess(Constants.DeleteEmployeeSuccess);
-
+            bool status = _employeeBal.DeleteEmployees(empNo);
+            if (status)
+            {
+                PrintSuccess(Constants.DeleteEmployeeSuccess);
+            }
+            else
+            {
+                PrintError(Constants.ErrorMessage);
+            }
         }
-        else
+        catch (Exception ex)
         {
-            _logger.LogError(Constants.ExceptionMessage);
+            _logger.LogError($"{Constants.ErrorMessage} : {ex.Message}");
         }
     }
 
@@ -207,15 +214,15 @@ public partial class EMS
             var filters = new EmployeeFilters { Search = empNo };
             employees = _employeeBal.SearchEmployees(filters);
         }
-        catch (Exception)
+        catch (Exception ex)
         {
-            _logger.LogError(Constants.ExceptionMessage);
+            _logger.LogError($"{Constants.ErrorMessage}: {ex.Message}");
             return;
         }
 
         if (employees == null || employees.Count == 0)
         {
-            _logger.LogSuccess(Constants.EmpNoNotFound);
+            PrintSuccess(Constants.EmpNoNotFound);
             return;
         }
 
@@ -227,16 +234,16 @@ public partial class EMS
             bool status = _employeeBal.UpdateEmployee(empNo, updatedEmployee);
             if (status)
             {
-                _logger.LogSuccess(Constants.UpdateEmployeeSuccess);
+                PrintSuccess(Constants.UpdateEmployeeSuccess);
             }
             else
             {
-                _logger.LogError(Constants.ExceptionMessage);
+                PrintError(Constants.ErrorMessage);
             }
         }
-        catch (Exception)
+        catch (Exception ex)
         {
-            _logger.LogError(Constants.ExceptionMessage);
+            _logger.LogError($"{Constants.ErrorMessage} : {ex.Message}");
         }
     }
 
@@ -245,7 +252,7 @@ public partial class EMS
         EmployeeFilters? keyword = GetSearchKeywordFromConsole();
         if (keyword == null)
         {
-            _logger.LogError(Constants.ExceptionMessage);
+            PrintError(Constants.ErrorMessage);
             return;
         }
         try
@@ -253,7 +260,7 @@ public partial class EMS
             List<EmployeeDetails> employees = _employeeBal.SearchEmployees(keyword);
             if (employees != null)
             {
-                _logger.LogSuccess($"{Constants.SearchEmployeeSuccess} {employees.Count}");
+                PrintSuccess($"{Constants.SearchEmployeeSuccess} {employees.Count}");
                 if (employees.Count > 0)
                 {
                     PrintEmployeesDetails(employees);
@@ -261,9 +268,9 @@ public partial class EMS
 
             }
         }
-        catch (Exception)
+        catch (Exception ex)
         {
-            _logger.LogError(Constants.ExceptionMessage);
+            _logger.LogError($"{Constants.ErrorMessage} : {ex.Message}");
         }
     }
 
@@ -272,7 +279,7 @@ public partial class EMS
         EmployeeFilters? filters = GetEmployeeFiltersFromConsole();
         if (filters == null)
         {
-            _logger.LogError(Constants.GettingDataFromConsoleError);
+            PrintError(Constants.GettingDataFromConsoleError);
             return;
         }
         try
@@ -280,7 +287,7 @@ public partial class EMS
             List<EmployeeDetails> employees = _employeeBal.FilterEmployees(filters);
             if (employees != null)
             {
-                _logger.LogSuccess($"{Constants.FilterEmployeesSuccess} {employees.Count}");
+                PrintSuccess($"{Constants.FilterEmployeesSuccess} {employees.Count}");
                 if (employees.Count > 0)
                 {
                     PrintEmployeesDetails(employees);
@@ -288,36 +295,50 @@ public partial class EMS
 
             }
         }
-        catch (Exception)
+        catch (Exception ex)
         {
-            _logger.LogError(Constants.ExceptionMessage);
+            _logger.LogError($"{Constants.ErrorMessage} : {ex.Message}");
         }
         ResetFilters(filters);
     }
 
     private static void CountEmployees()
     {
-        int count = _employeeBal.CountEmployees();
-        _logger.LogSuccess($"{Constants.CountEmployeesSuccess} {count}");
+        try
+        {
+            int count = _employeeBal.CountEmployees();
+            PrintSuccess($"{Constants.CountEmployeesSuccess} {count}");
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError($"{Constants.ErrorMessage} : {ex.Message}");
+        }
     }
 
     // Roles Command Functions
     private static void AddRoles()
     {
-        Role role = GetRoleDataFromConsole();
-        if (role == null)
+        try
         {
-            _logger.LogError(Constants.GettingDataFromConsoleError);
-            return;
+            Role role = GetRoleDataFromConsole();
+            if (role == null)
+            {
+                PrintError(Constants.GettingDataFromConsoleError);
+                return;
+            }
+            bool status = _roleBal.AddRole(role);
+            if (status)
+            {
+                PrintSuccess(Constants.AddRoleSuccess);
+            }
+            else
+            {
+                PrintError(Constants.ErrorMessage);
+            }
         }
-        bool status = _roleBal.AddRole(role);
-        if (status)
+        catch (Exception ex)
         {
-            _logger.LogSuccess(Constants.AddRoleSuccess);
-        }
-        else
-        {
-            _logger.LogError(Constants.ExceptionMessage);
+            _logger.LogError($"{Constants.ErrorMessage}: {ex.Message}");
         }
     }
 
@@ -328,16 +349,16 @@ public partial class EMS
             List<Role> roles = _roleBal.GetAll();
             if (roles != null)
             {
-                _logger.LogSuccess($"{roles.Count} {Constants.RetrieveAllRolesSuccess}");
+                PrintSuccess($"{roles.Count} {Constants.RetrieveAllRolesSuccess}");
                 if (roles.Count > 0)
                 {
                     PrintRoles(roles);
                 }
             }
         }
-        catch (Exception)
+        catch (Exception e)
         {
-            _logger.LogError(Constants.ExceptionMessage);
+            _logger.LogError($"{Constants.ErrorMessage} : {e.Message}");
         }
     }
 }

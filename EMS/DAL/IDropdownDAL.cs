@@ -1,11 +1,13 @@
+using EmployeeManagementSystem.Models;
+
 namespace EmployeeManagementSystem.DAL;
 
 public interface IDropdownDAL
 {
-    Dictionary<int, string>? GetLocations();
-    Dictionary<int, string>? GetDepartments();
-    Dictionary<int, string>? GetManagers();
-    Dictionary<int, string>? GetProjects();
-    Dictionary<int, string>? GetStatus();
-    Dictionary<int, string>? GetRoles();
+    List<Dropdown>? GetLocationsList();
+    List<Dropdown>? GetDepartmentsList();
+    List<Dropdown>? GetManagersList();
+    List<Dropdown>? GetProjectsList();
+    List<Dropdown>? GetStatusList();
+    List<Role>? GetRolesList();
 }

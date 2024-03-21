@@ -1,26 +1,26 @@
 [
   {
     "Id" : 1,
-    "LocationName" : "Hyderabad"
+    "Name" : "Hyderabad"
   },
   {
     "Id" : 2,
-    "LocationName" : "Delhi"
+    "Name" : "Delhi"
   },
   {
     "Id" : 3,
-    "LocationName" : "Mumbai"
+    "Name" : "Mumbai"
   },
   {
     "Id" : 4,
-    "LocationName" : "Bangalore"
+    "Name" : "Bangalore"
   },
   {
     "Id" : 5,
-    "LocationName" : "Seattle"
+    "Name" : "Seattle"
   },
   {
     "Id" : 6,
-    "LocationName" : "New York"
+    "Name" : "New York"
   }
 ]

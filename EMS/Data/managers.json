@@ -1,27 +1,27 @@
 [
   {
     "Id": 1,
-    "ManagerName": "John Doe",
+    "Name": "John Doe",
     "EmpNo": "TZ0001"
   },
   {
     "Id": 2,
-    "ManagerName": "Jane Smith",
+    "Name": "Jane Smith",
     "EmpNo": "TZ0002"
   },
   {
     "Id": 3,
-    "ManagerName": "Alice Johnson",
+    "Name": "Alice Johnson",
     "EmpNo": "TZ0003"
   },
   {
     "Id": 4,
-    "ManagerName": "Shivam Singh",
+    "Name": "Shivam Singh",
     "EmpNo": "TZ5873"
   },
   {
     "Id": 5,
-    "ManagerName": "Vishal K",
+    "Name": "Vishal K",
     "EmpNo": "TZ9001"
   }
 ]

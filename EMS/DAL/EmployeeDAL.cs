@@ -22,17 +22,26 @@ public class EmployeeDAL : IEmployeeDAL
     {
         List<Employee> existingEmployees = _jsonUtils.ReadJSON<Employee>(_filePath);
         existingEmployees.Add(employee);
-        _jsonUtils.WriteJSON(existingEmployees, _filePath);
+        try
+        {
+            _jsonUtils.WriteJSON(existingEmployees, _filePath);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError($"Error writing to file '{_filePath}': {ex.Message}");
+            return false;
+        }
         return true;
     }
 
-    public List<Employee>? RetrieveAll()
+    public List<EmployeeDetails>? RetrieveAll()
     {
-        List<Employee> employees = _jsonUtils.ReadJSON<Employee>(_filePath);
+        List<EmployeeDetails> employees = _jsonUtils.ReadJSON<EmployeeDetails>(_filePath);
         if (employees == null || employees.Count == 0)
         {
-            return [];
+            return new List<EmployeeDetails>();
         }
+
         return employees;
     }
 
@@ -51,7 +60,15 @@ public class EmployeeDAL : IEmployeeDAL
         dbEmployee.DepartmentId = GetUpdatedValue(employee.DepartmentId, dbEmployee.DepartmentId);
         dbEmployee.AssignManagerId = GetUpdatedValue(employee.AssignManagerId, dbEmployee.AssignManagerId);
         dbEmployee.AssignProjectId = GetUpdatedValue(employee.AssignProjectId, dbEmployee.AssignProjectId);
-        _jsonUtils.WriteJSON(existingEmployees, _filePath);
+        try
+        {
+            _jsonUtils.WriteJSON(existingEmployees, _filePath);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError($"Error writing to file '{_filePath}': {ex.Message}");
+            return false;
+        }
         return true;
     }
 
@@ -63,32 +80,39 @@ public class EmployeeDAL : IEmployeeDAL
         if (employeeToDelete != null)
         {
             existingEmployees.Remove(employeeToDelete);
-            _jsonUtils.WriteJSON(existingEmployees, _filePath);
-
+            try
+            {
+                _jsonUtils.WriteJSON(existingEmployees, _filePath);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Error writing to file '{_filePath}': {ex.Message}");
+                return false;
+            }
         }
         return true;
     }
 
-    public List<EmployeeDetails>? Filter(EmployeeFilters? filters, List<EmployeeDetails> employeeDetailsList)
+    public List<EmployeeDetails>? Filter(EmployeeFilters? filters)
     {
+        List<EmployeeDetails> employees = RetrieveAll();
+        if (employees == null || employees.Count == 0)
+        {
+            return [];
+        }
         if (filters != null)
         {
             // Apply filters
-            employeeDetailsList = ApplyFilter(employeeDetailsList, filters);
+            employees = ApplyFilter(employees, filters);
 
             // Apply search
             if (!string.IsNullOrWhiteSpace(filters.Search))
             {
-                employeeDetailsList = ApplySearch(employeeDetailsList, filters.Search);
+                employees = ApplySearch(employees, filters.Search);
             }
         }
 
-        if (employeeDetailsList.Count == 0)
-        {
-            return []; // Return an empty list
-        }
-
-        return employeeDetailsList;
+        return employees;
     }
 
     public int Count()
@@ -98,30 +122,9 @@ public class EmployeeDAL : IEmployeeDAL
         return count;
     }
 
-    private static EmployeeDetails GetEmployeeDetails(Employee employee)
-    {
-        EmployeeDetails employeeDetails = new()
-        {
-            EmpNo = employee.EmpNo,
-            StatusId = employee.StatusId,
-            FirstName = employee.FirstName,
-            LastName = employee.LastName,
-            Dob = employee.Dob,
-            Email = employee.Email,
-            MobileNumber = employee.MobileNumber,
-            LocationId = employee.LocationId,
-            JoiningDate = employee.JoiningDate,
-            RoleId = employee.RoleId,
-            DepartmentId = employee.DepartmentId,
-            AssignManagerId = employee.AssignManagerId,
-            AssignProjectId = employee.AssignProjectId,
-        };
-        return employeeDetails;
-    }
-
     private static List<EmployeeDetails> ApplyFilter(List<EmployeeDetails> employees, EmployeeFilters filters)
     {
-        List<Func<EmployeeDetails, bool>> filterConditions = new List<Func<EmployeeDetails, bool>>();
+        List<Func<Employee, bool>> filterConditions = [];
 
         if (filters.Alphabet != null && filters.Alphabet.Count != 0)
         {
@@ -156,13 +159,8 @@ public class EmployeeDAL : IEmployeeDAL
         string keyword = searchKeyword.ToLower();
         return employees.Where(e =>
             e.EmpNo?.Contains(keyword, StringComparison.CurrentCultureIgnoreCase) == true ||
-            e.Email?.Contains(keyword, StringComparison.CurrentCultureIgnoreCase) == true ||
             e.FirstName?.Contains(keyword, StringComparison.CurrentCultureIgnoreCase) == true ||
-            e.LastName?.Contains(keyword, StringComparison.CurrentCultureIgnoreCase) == true ||
-            e.LocationName?.Contains(keyword, StringComparison.CurrentCultureIgnoreCase) == true ||
-            e.DepartmentName?.Contains(keyword, StringComparison.CurrentCultureIgnoreCase) == true ||
-            e.StatusName?.Contains(keyword, StringComparison.CurrentCultureIgnoreCase) == true ||
-            e.RoleName?.Contains(keyword, StringComparison.CurrentCultureIgnoreCase) == true
+            e.LastName?.Contains(keyword, StringComparison.CurrentCultureIgnoreCase) == true
             ).ToList();
     }
 

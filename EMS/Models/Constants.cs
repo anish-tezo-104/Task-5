@@ -2,8 +2,7 @@ namespace EmployeeManagementSystem.Models;
 
 public class Constants
 {
-
-    public const string ExceptionMessage = "Something went wrong. Please try again!";
+    public const string ErrorMessage = "Some error occurred";
     public const string FileNotFoundExceptionMessage = "File Not Found Exception occurred.\nFile is not found.";
     public const string IOExceptionMessage = "IO Exception occurred.\nError in IO Operations.";
     public const string EmpNoNotFound = "No employee found with the provided employee number.";

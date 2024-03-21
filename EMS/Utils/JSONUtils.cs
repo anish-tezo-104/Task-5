@@ -1,9 +1,11 @@
 using System.Text.Json;
+using EmployeeManagementSystem.Models;
 
 namespace EmployeeManagementSystem.Utils;
 
 public class JSONUtils
 {
+
     public List<T> ReadJSON<T>(string filePath)
     {
         List<T> items;

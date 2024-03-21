@@ -1,7 +1,7 @@
 namespace EmployeeManagementSystem.Models;
 
-public class Location
+public class Dropdown
 {
     public int Id { get; set; }
-    public required string LocationName { get; set; }
+    public string? Name { get; set; }
 }

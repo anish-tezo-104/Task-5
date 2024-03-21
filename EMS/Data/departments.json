@@ -1,26 +1,26 @@
 [
   {
     "Id": 1,
-    "DepartmentName": "IT"
+    "Name": "IT"
   },
   {
     "Id": 2,
-    "DepartmentName": "Marketing"
+    "Name": "Marketing"
   },
   {
     "Id": 3,
-    "DepartmentName": "Finance"
+    "Name": "Finance"
   },
   {
     "Id": 4,
-    "DepartmentName": "Human Resources"
+    "Name": "Human Resources"
   },
   {
     "Id": 5,
-    "DepartmentName": "Sales"
+    "Name": "Sales"
   },
   {
     "Id": 6,
-    "DepartmentName": "Customer Service"
+    "Name": "Customer Service"
   }
 ]

@@ -1,152 +1,152 @@
 [
   {
     "Id": 1,
-    "RoleName": "Software Engineer",
+    "Name": "Software Engineer",
     "DepartmentId": 1
   },
   {
     "Id": 2,
-    "RoleName": "Product Manager",
+    "Name": "Product Manager",
     "DepartmentId": 1
   },
   {
     "Id": 3,
-    "RoleName": "Frontend Developer",
+    "Name": "Frontend Developer",
     "DepartmentId": 1
   },
   {
     "Id": 4,
-    "RoleName": "Data Scientist",
+    "Name": "Data Scientist",
     "DepartmentId": 1
   },
   {
     "Id": 5,
-    "RoleName": "Software Engineer Trainee",
+    "Name": "Software Engineer Trainee",
     "DepartmentId": 1
   },
   {
     "Id": 6,
-    "RoleName": "Marketing Specialist",
+    "Name": "Marketing Specialist",
     "DepartmentId": 2
   },
   {
     "Id": 7,
-    "RoleName": "Content Writer",
+    "Name": "Content Writer",
     "DepartmentId": 2
   },
   {
     "Id": 8,
-    "RoleName": "Marketing Manager",
+    "Name": "Marketing Manager",
     "DepartmentId": 2
   },
   {
     "Id": 9,
-    "RoleName": "Social Media Manager",
+    "Name": "Social Media Manager",
     "DepartmentId": 2
   },
   {
     "Id": 10,
-    "RoleName": "SEO Specialist",
+    "Name": "SEO Specialist",
     "DepartmentId": 2
   },
   {
     "Id": 11,
-    "RoleName": "Financial Analyst",
+    "Name": "Financial Analyst",
     "DepartmentId": 3
   },
   {
     "Id": 12,
-    "RoleName": "Accountant",
+    "Name": "Accountant",
     "DepartmentId": 3
   },
   {
     "Id": 13,
-    "RoleName": "Financial Manager",
+    "Name": "Financial Manager",
     "DepartmentId": 3
   },
   {
     "Id": 14,
-    "RoleName": "Budget Analyst",
+    "Name": "Budget Analyst",
     "DepartmentId": 3
   },
   {
     "Id": 15,
-    "RoleName": "Tax Specialist",
+    "Name": "Tax Specialist",
     "DepartmentId": 3
   },
   {
     "Id": 16,
-    "RoleName": "HR Coordinator",
+    "Name": "HR Coordinator",
     "DepartmentId": 4
   },
   {
     "Id": 17,
-    "RoleName": "Recruiter",
+    "Name": "Recruiter",
     "DepartmentId": 4
   },
   {
     "Id": 18,
-    "RoleName": "Training Specialist",
+    "Name": "Training Specialist",
     "DepartmentId": 4
   },
   {
     "Id": 19,
-    "RoleName": "HR Manager",
+    "Name": "HR Manager",
     "DepartmentId": 4
   },
   {
     "Id": 20,
-    "RoleName": "Compensation Analyst",
+    "Name": "Compensation Analyst",
     "DepartmentId": 4
   },
   {
     "Id": 21,
-    "RoleName": "Sales Representative",
+    "Name": "Sales Representative",
     "DepartmentId": 5
   },
   {
     "Id": 22,
-    "RoleName": "Sales Manager",
+    "Name": "Sales Manager",
     "DepartmentId": 5
   },
   {
     "Id": 23,
-    "RoleName": "Account Executive",
+    "Name": "Account Executive",
     "DepartmentId": 5
   },
   {
     "Id": 24,
-    "RoleName": "Business Development Manager",
+    "Name": "Business Development Manager",
     "DepartmentId": 5
   },
   {
     "Id": 25,
-    "RoleName": "Customer Success Manager",
+    "Name": "Customer Success Manager",
     "DepartmentId": 5
   },
   {
     "Id": 26,
-    "RoleName": "Customer Support Specialist",
+    "Name": "Customer Support Specialist",
     "DepartmentId": 6
   },
   {
     "Id": 27,
-    "RoleName": "Customer Service Manager",
+    "Name": "Customer Service Manager",
     "DepartmentId": 6
   },
   {
     "Id": 28,
-    "RoleName": "Technical Support Engineer",
+    "Name": "Technical Support Engineer",
     "DepartmentId": 6
   },
   {
     "Id": 29,
-    "RoleName": "Client Success Manager",
+    "Name": "Client Success Manager",
     "DepartmentId": 6
   },
   {
     "Id": 30,
-    "RoleName": "Call Center Supervisor",
+    "Name": "Call Center Supervisor",
     "DepartmentId": 6
   }
 ]

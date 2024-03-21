@@ -1,105 +1,68 @@
 using EmployeeManagementSystem.DAL;
 using EmployeeManagementSystem.Models;
 using EmployeeManagementSystem.Utils;
+using AutoMapper;
+
 namespace EmployeeManagementSystem.BAL;
 
 public class EmployeeBAL : IEmployeeBAL
 {
     private readonly IEmployeeDAL _employeeDal;
-    private readonly IDropdownDAL _dropdownDal;
+    private readonly IDropdownBAL _dropdownBal;
     private readonly ILogger _logger;
 
-    public EmployeeBAL(ILogger logger, IEmployeeDAL employeeDal, IDropdownDAL dropdownDAL)
+    public EmployeeBAL(ILogger logger, IEmployeeDAL employeeDal, IDropdownBAL dropdownBal)
     {
         _employeeDal = employeeDal;
-        _dropdownDal = dropdownDAL;
+        _dropdownBal = dropdownBal;
         _logger = logger;
     }
 
     public List<EmployeeDetails>? GetAll()
     {
-        List<EmployeeDetails> employeeDetailsList;
-        try
+        List<EmployeeDetails> employees;
+        employees = _employeeDal.RetrieveAll();
+        if (employees != null)
         {
-            employeeDetailsList = GetEmployeeDetails();
+            employees = GetEmployeeDetails(employees);
         }
-        catch (Exception)
-        {
-            throw; 
-        }
-        return employeeDetailsList;
+        return employees;
     }
 
     public bool AddEmployee(Employee employee)
     {
-        bool status;
-        try
-        {
-            status = _employeeDal.Insert(employee);
-        }
-        catch (Exception)
-        {
-            status = false;
-        }
-        return status;
+        return _employeeDal.Insert(employee);
     }
 
     public bool DeleteEmployees(string empNo)
     {
-        bool status;
-        try
-        {
-            status = _employeeDal.Delete(empNo);
-        }
-        catch (Exception)
-        {
-            status = false;
-        }
-
-        return status;
+        return _employeeDal.Delete(empNo);
     }
 
     public bool UpdateEmployee(string empNo, Employee employee)
     {
-        try
-        {
-            return _employeeDal.Update(empNo, employee);
-        }
-        catch (Exception ex)
-        {
-            throw new Exception("Error occurred while updating employee data.", ex);
-        }
+        return _employeeDal.Update(empNo, employee);
     }
 
     public List<EmployeeDetails>? SearchEmployees(EmployeeFilters keyword)
     {
-        List<EmployeeDetails> employeeDetailsList, resultEmployees;
-        try
+        List<EmployeeDetails> searchedEmployees;
+        searchedEmployees = _employeeDal.Filter(keyword);
+        if (searchedEmployees != null)
         {
-            employeeDetailsList =  employeeDetailsList = GetEmployeeDetails();
-            resultEmployees = _employeeDal.Filter(keyword, employeeDetailsList);
+            searchedEmployees = GetEmployeeDetails(searchedEmployees);
         }
-        catch (Exception)
-        {
-            throw;
-        }
-
-        return resultEmployees;
+        return searchedEmployees;
     }
 
     public List<EmployeeDetails>? FilterEmployees(EmployeeFilters filters)
     {
-        List<EmployeeDetails> employeeDetailsList, filteredEmployees;
-        try
+        List<EmployeeDetails> filteredEmployees;
+        filteredEmployees = _employeeDal.Filter(filters);
+        if (filteredEmployees != null)
         {
-            employeeDetailsList = GetEmployeeDetails();
-            filteredEmployees = _employeeDal.Filter(filters, employeeDetailsList);
+            filteredEmployees = GetEmployeeDetails(filteredEmployees);
         }
-        catch (Exception)
-        {
-            throw;
-        }
-
         return filteredEmployees;
     }
 
@@ -108,51 +71,33 @@ public class EmployeeBAL : IEmployeeBAL
         return _employeeDal.Count();
     }
 
-    private List<EmployeeDetails> GetEmployeeDetails()
+    private List<EmployeeDetails> GetEmployeeDetails(List<EmployeeDetails> employees)
     {
-        List<Employee> employees;
-        List<EmployeeDetails> employeeDetailsList;
-        Dictionary<int, string> locationNames = _dropdownDal.GetLocations();
-        Dictionary<int, string> roleNames = _dropdownDal.GetRoles();
-        Dictionary<int, string> departmentNames = _dropdownDal.GetDepartments();
-        Dictionary<int, string> managerNames = _dropdownDal.GetManagers();
-        Dictionary<int, string> projectNames = _dropdownDal.GetProjects();
-        Dictionary<int, string> statusNames = _dropdownDal.GetStatus();
-
-        employees = _employeeDal.RetrieveAll();
         if (employees == null || employees.Count == 0)
         {
             return [];
         }
-        employeeDetailsList = employees.Select(employee => PopulateEmployeeDetails(employee, locationNames!, roleNames!, departmentNames!, managerNames!, projectNames!, statusNames!)).ToList();
-        return employeeDetailsList;
+
+        Dictionary<int, string> locationNames = _dropdownBal.GetLocations();
+        Dictionary<int, string> roleNames = _dropdownBal.GetRoles();
+        Dictionary<int, string> departmentNames = _dropdownBal.GetDepartments();
+        Dictionary<int, string> managerNames = _dropdownBal.GetManagers();
+        Dictionary<int, string> projectNames = _dropdownBal.GetProjects();
+        Dictionary<int, string> statusNames = _dropdownBal.GetStatus();
+
+        foreach (EmployeeDetails employee in employees)
+        {
+
+            employee.EmpNo = employee.EmpNo;
+            employee.StatusName = statusNames.TryGetValue(employee.StatusId, out string? statusValue) ? statusValue : null;
+            employee.LocationName = employee.LocationId.HasValue && locationNames.TryGetValue(employee.LocationId.Value, out string? locationValue) ? locationValue : null;
+            employee.RoleName = employee.RoleId.HasValue && roleNames.TryGetValue(employee.RoleId.Value, out string? roleValue) ? roleValue : null;
+            employee.DepartmentName = employee.DepartmentId.HasValue && departmentNames.TryGetValue(employee.DepartmentId.Value, out string? departmentValue) ? departmentValue : null;
+            employee.AssignManagerName = employee.AssignManagerId.HasValue && managerNames.TryGetValue(employee.AssignManagerId.Value, out string? managerValue) ? managerValue : null;
+            employee.AssignProjectName = employee.AssignProjectId.HasValue && projectNames.TryGetValue(employee.AssignProjectId.Value, out string? projectValue) ? projectValue : null;
+        }
+        return employees;
     }
 
-    private static EmployeeDetails PopulateEmployeeDetails(Employee employee, Dictionary<int, string> locationNames, Dictionary<int, string> roleNames, Dictionary<int, string> departmentNames, Dictionary<int, string> managerNames, Dictionary<int, string> projectNames, Dictionary<int, string> statusNames)
-    {
-        EmployeeDetails employeeDetails = new EmployeeDetails()
-        {
-            EmpNo = employee.EmpNo,
-            StatusId = employee.StatusId,
-            StatusName = statusNames.TryGetValue(employee.StatusId, out string? statusValue) ? statusValue : null,
-            FirstName = employee.FirstName,
-            LastName = employee.LastName,
-            Dob = employee.Dob,
-            Email = employee.Email,
-            MobileNumber = employee.MobileNumber,
-            LocationId = employee.LocationId,
-            LocationName = employee.LocationId.HasValue && locationNames.TryGetValue(employee.LocationId.Value, out string? locationValue) ? locationValue : null,
-            JoiningDate = employee.JoiningDate,
-            RoleId = employee.RoleId,
-            RoleName = employee.RoleId.HasValue && roleNames.TryGetValue(employee.RoleId.Value, out string? roleValue) ? roleValue : null,
-            DepartmentId = employee.DepartmentId,
-            DepartmentName = employee.DepartmentId.HasValue && departmentNames.TryGetValue(employee.DepartmentId.Value, out string? departmentValue) ? departmentValue : null,
-            AssignManagerId = employee.AssignManagerId,
-            AssignManagerName = employee.AssignManagerId.HasValue && managerNames.TryGetValue(employee.AssignManagerId.Value, out string? managerValue) ? managerValue : null,
-            AssignProjectId = employee.AssignProjectId,
-            AssignProjectName = employee.AssignProjectId.HasValue && projectNames.TryGetValue(employee.AssignProjectId.Value, out string? projectValue) ? projectValue : null
-        };
-        return employeeDetails;
-    }
 }
 

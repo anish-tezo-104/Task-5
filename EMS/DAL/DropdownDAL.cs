@@ -7,49 +7,43 @@ namespace EmployeeManagementSystem.DAL;
 public class DropdownDAL : IDropdownDAL
 {
     public readonly IConfiguration _configuration;
-    public readonly Dictionary<int, string>? _locations;
-    public readonly Dictionary<int, string>? _departments;
-    public readonly Dictionary<int, string>? _managers;
-    public readonly Dictionary<int, string>? _projects;
-    public readonly Dictionary<int, string>? _status;
-    public readonly Dictionary<int, string>? _roles;
 
     public DropdownDAL(IConfiguration configuration)
     {
         _configuration = configuration;
     }
 
-    public Dictionary<int, string>? GetLocations()
+    public List<Dropdown>? GetLocationsList()
     {
-        return LoadData<Location>("LocationJsonPath", l => l.Id, l => l.LocationName);
+        return LoadDataToList<List<Dropdown>>("LocationJsonPath");
     }
 
-    public Dictionary<int, string>? GetDepartments()
+    public List<Dropdown>? GetDepartmentsList()
     {
-        return LoadData<Department>("DepartmentJsonPath", d => d.Id, d => d.DepartmentName);
+        return LoadDataToList<List<Dropdown>>("DepartmentJsonPath");
     }
 
-    public Dictionary<int, string>? GetManagers()
+    public List<Dropdown>? GetManagersList()
     {
-        return LoadData<Manager>("ManagerJsonPath", m => m.Id, m => m.ManagerName);
+        return LoadDataToList<List<Dropdown>>("ManagerJsonPath");
     }
 
-    public Dictionary<int, string>? GetProjects()
+    public List<Dropdown>? GetProjectsList()
     {
-        return LoadData<Project>("ProjectJsonPath", p => p.Id, p => p.ProjectTitle);
+        return LoadDataToList<List<Dropdown>>("ProjectJsonPath");
     }
 
-    public Dictionary<int, string>? GetStatus()
+    public List<Dropdown>? GetStatusList()
     {
-        return LoadData<Status>("StatusJsonPath", s => s.Id, s => s.StatusName);
+        return LoadDataToList<List<Dropdown>>("StatusJsonPath");
     }
 
-    public Dictionary<int, string>? GetRoles()
+    public List<Role>? GetRolesList()
     {
-        return LoadData<Role>("RoleJsonPath", r => r.Id, r => r.RoleName);
+        return LoadDataToList<List<Role>>("RoleJsonPath");
     }
 
-    public Dictionary<int, string>? LoadData<T>(string jsonFilePathKey, Func<T, int> keySelector, Func<T, string> valueSelector) where T : class
+    private T? LoadDataToList<T>(string jsonFilePathKey)
     {
         string jsonFilePath = _configuration[jsonFilePathKey];
         if (string.IsNullOrEmpty(jsonFilePath))
@@ -65,26 +59,11 @@ public class DropdownDAL : IDropdownDAL
         try
         {
             string json = File.ReadAllText(jsonFilePath);
-            var items = JsonSerializer.Deserialize<List<T>>(json);
-            if (items != null)
-            {
-                var dictionary = new Dictionary<int, string>();
-                foreach (var item in items)
-                {
-                    var key = keySelector(item);
-                    var value = valueSelector(item);
-                    if (key != default && !string.IsNullOrEmpty(value))
-                    {
-                        dictionary[key] = value;
-                    }
-                }
-                return dictionary;
-            }
+            return JsonSerializer.Deserialize<T>(json);
         }
         catch (Exception ex)
         {
             throw new Exception($"Error reading or deserializing JSON file: {ex.Message}", ex);
         }
-        return null;
     }
 }

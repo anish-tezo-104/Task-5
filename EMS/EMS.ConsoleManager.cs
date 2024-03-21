@@ -30,11 +30,11 @@ public partial class EMS
         string joiningDate = GetDataFromField("Joining Date (YYYY-MM-DD)", required);
         DateTime.TryParse(joiningDate, out DateTime joiningDateValue);
         employee.JoiningDate = joiningDateValue;
-        employee.LocationId = GetIdFromUser<Location>("Location", "LocationJsonPath");
-        employee.DepartmentId = GetIdFromUser<Department>("Department", "DepartmentJsonPath");
+        employee.LocationId = GetIdFromUser<Dropdown>("Location", "LocationJsonPath");
+        employee.DepartmentId = GetIdFromUser<Dropdown>("Department", "DepartmentJsonPath");
         employee.RoleId = GetRoleIdFromUserForDepartment(employee.DepartmentId);
-        employee.AssignManagerId = GetIdFromUser<Manager>("Assign Manager", "ManagerJsonPath");
-        employee.AssignProjectId = GetIdFromUser<Project>("Assign Project", "ProjectJsonPath");
+        employee.AssignManagerId = GetIdFromUser<Dropdown>("Assign Manager", "ManagerJsonPath");
+        employee.AssignProjectId = GetIdFromUser<Dropdown>("Assign Project", "ProjectJsonPath");
         return employee;
     }
 
@@ -44,13 +44,13 @@ public partial class EMS
         string empNo = Console.ReadLine();
         if (isRequired && (string.IsNullOrEmpty(empNo) || string.IsNullOrWhiteSpace(empNo)))
         {
-            _logger.LogWarning("Field is required. Please enter a value.\n");
+            PrintWarning("Field is required. Please enter a value.\n");
             return GetDataFromField(fieldName, isRequired);
         }
 
         if (empNo != null && IsEmpNoDuplicate(empNo))
         {
-            _logger.LogWarning($"Employee already exists.");
+            PrintWarning($"Employee already exists.");
             ValidateEmployeeNo(fieldName, isRequired);
         }
         return empNo;
@@ -69,14 +69,14 @@ public partial class EMS
         string roleFilePath = GetIConfiguration()["RoleJsonPath"];
 
         // Read departments and roles
-        List<Department> departments = _jsonUtils.ReadJSON<Department>(departmentFilePath);
+        List<Dropdown> departments = _jsonUtils.ReadJSON<Dropdown>(departmentFilePath);
         List<Role> roles = _jsonUtils.ReadJSON<Role>(roleFilePath);
 
         // Filter roles based on the selected department
         var department = departments.FirstOrDefault(d => d.Id == departmentId);
         if (department == null)
         {
-            _logger.LogError($"Department with ID '{departmentId}' not found.");
+            PrintError($"Department with ID '{departmentId}' not found.");
             return null;
         }
 
@@ -87,18 +87,18 @@ public partial class EMS
 
         if (validRoleIds.Count == 0)
         {
-            _logger.LogWarning($"No roles found for the department '{department.DepartmentName}'.");
+            PrintWarning($"No roles found for the department '{department.Name}'.");
             return null;
         }
 
         // Display valid roles for the selected department
-        PrintConsoleMessage($"\nValid roles for department '{department.DepartmentName}':\n", ConsoleColor.Cyan);
+        PrintConsoleMessage($"\nValid roles for department '{department.Name}':\n", ConsoleColor.Cyan);
         foreach (var validRoleId in validRoleIds)
         {
             var role = roles.FirstOrDefault(r => r.Id == validRoleId);
             if (role != null)
             {
-                PrintConsoleMessage($"- {role.RoleName}", ConsoleColor.Cyan);
+                PrintConsoleMessage($"- {role.Name}", ConsoleColor.Cyan);
             }
         }
         PrintConsoleMessage("\n");
@@ -114,7 +114,7 @@ public partial class EMS
             roleId = FindIdInJson<Role>(userInput, roleFilePath);
             if (!validRoleIds.Contains(roleId ?? -1))
             {
-                _logger.LogError($"Invalid role. Please select from the roles listed for department '{department.DepartmentName}'.");
+                PrintError($"Invalid role. Please select from the roles listed for department '{department.Name}'.");
             }
         } while (!validRoleIds.Contains(roleId ?? -1));
 
@@ -135,7 +135,7 @@ public partial class EMS
             id = FindIdInJson<T>(userInput, filePath);
             if (id == null)
             {
-                _logger.LogError($"Invalid {fieldName}. Please try again.");
+                PrintError($"Invalid {fieldName}. Please try again.");
             }
         } while (id == null);
 
@@ -191,9 +191,9 @@ public partial class EMS
 
     private static partial EmployeeFilters? GetEmployeeFiltersFromConsole()
     {
-        DisplayJsonOptions<Location>(GetIConfiguration()["LocationJsonPath"]);
-        DisplayJsonOptions<Department>(GetIConfiguration()["DepartmentJsonPath"]);
-        DisplayJsonOptions<Status>(GetIConfiguration()["StatusJsonPath"]);
+        DisplayJsonOptions<Dropdown>(GetIConfiguration()["LocationJsonPath"], "Location");
+        DisplayJsonOptions<Dropdown>(GetIConfiguration()["DepartmentJsonPath"], "Department");
+        DisplayJsonOptions<Dropdown>(GetIConfiguration()["StatusJsonPath"], "Status");
 
         EmployeeFilters filters = new();
         PrintConsoleMessage("\nEnter the filter criteria:\n\n");
@@ -201,19 +201,19 @@ public partial class EMS
         string alphabetInput = GetDataFromField("Enter alphabet letters (separated by comma if multiple)");
         filters.Alphabet = string.IsNullOrEmpty(alphabetInput) ? null : alphabetInput.Split(',').SelectMany(x => x.Trim().Select(char.ToLower)).ToList();
 
-        ValidateFilters<Location>("Location", "LocationJsonPath", out var locationIds);
+        ValidateFilters<Dropdown>("Location", "LocationJsonPath", out var locationIds);
         filters.Locations = locationIds;
 
-        ValidateFilters<Department>("Department", "DepartmentJsonPath", out var departmentIds);
+        ValidateFilters<Dropdown>("Department", "DepartmentJsonPath", out var departmentIds);
         filters.Departments = departmentIds;
 
-        ValidateFilters<Status>("Status", "StatusJsonPath", out var statusIds);
+        ValidateFilters<Dropdown>("Status", "StatusJsonPath", out var statusIds);
         filters.Status = statusIds;
 
         return filters;
     }
 
-    private static void DisplayJsonOptions<T>(string filePath) where T : class
+    private static void DisplayJsonOptions<T>(string filePath, string dropdownName) where T : class
     {
         try
         {
@@ -223,7 +223,7 @@ public partial class EMS
 
                 if (items != null && items.Count > 0)
                 {
-                    PrintConsoleMessage($"\n{typeof(T).Name}:\n");
+                    PrintConsoleMessage($"\n{dropdownName}:\n");
                     foreach (var item in items)
                     {
                         PropertyInfo[] properties = typeof(T).GetProperties();
@@ -238,7 +238,7 @@ public partial class EMS
             }
             else
             {
-                PrintConsoleMessage(Constants.ExceptionMessage);
+                PrintConsoleMessage(Constants.ErrorMessage);
             }
         }
         catch (IOException)
@@ -276,7 +276,7 @@ public partial class EMS
                 }
                 else
                 {
-                    _logger.LogError($"Invalid value '{filterValue}'. Please enter a valid {fieldName}.");
+                    PrintError($"Invalid value '{filterValue}'. Please enter a valid {fieldName}.");
                 }
             }
         } while (true);
@@ -302,12 +302,12 @@ public partial class EMS
             Email = GetDataFromField("Email")!,
             MobileNumber = GetDataFromField("Mobile Number")!,
             JoiningDate = ParseNullableDate(GetDataFromField("Joining Date (YYYY-MM-DD)")),
-            LocationId = GetIdFromUser<Location>("Location", "LocationJsonPath"),
-            DepartmentId = GetIdFromUser<Department>("Department", "DepartmentJsonPath")
+            LocationId = GetIdFromUser<Dropdown>("Location", "LocationJsonPath"),
+            DepartmentId = GetIdFromUser<Dropdown>("Department", "DepartmentJsonPath")
         };
         employee.RoleId = GetRoleIdFromUserForDepartment(employee.DepartmentId);
-        employee.AssignManagerId = GetIdFromUser<Manager>("Assign Manager", "ManagerJsonPath");
-        employee.AssignProjectId = GetIdFromUser<Project>("Assign Project", "ProjectJsonPath");
+        employee.AssignManagerId = GetIdFromUser<Dropdown>("Assign Manager", "ManagerJsonPath");
+        employee.AssignProjectId = GetIdFromUser<Dropdown>("Assign Project", "ProjectJsonPath");
 
         return employee;
     }
@@ -346,7 +346,7 @@ public partial class EMS
         string fieldInput = Console.ReadLine();
         if (isRequired && (string.IsNullOrEmpty(fieldInput) || string.IsNullOrWhiteSpace(fieldInput)))
         {
-            _logger.LogWarning("Field is required. Please enter a value.\n");
+            PrintWarning("Field is required. Please enter a value.\n");
             return GetDataFromField(message, isRequired);
         }
         return fieldInput;
@@ -402,8 +402,8 @@ public partial class EMS
         Role role = new()
         {
             Id = roles.Count + 1,
-            DepartmentId = GetIdFromUser<Department>("Department", "DepartmentJsonPath", required),
-            RoleName = GetDataFromField("Role Name", required)!
+            DepartmentId = GetIdFromUser<Dropdown>("Department", "DepartmentJsonPath", required),
+            Name = GetDataFromField("Role Name", required)!
         };
 
         return role;
@@ -419,7 +419,7 @@ public partial class EMS
 
     private static partial void PrintRoles(List<Role> roles)
     {
-        Dictionary<int, string>? departmentNames = _dropdownDal.GetDepartments();
+        Dictionary<int, string>? departmentNames = _dropdownBal.GetDepartments();
 
         if (departmentNames != null)
         {
@@ -427,7 +427,7 @@ public partial class EMS
             foreach (Role role in roles)
             {
                 int id = role.Id;
-                string roleName = role.RoleName;
+                string roleName = role.Name;
                 int departmentId = role.DepartmentId ?? 0;
                 string? departmentName = departmentNames.TryGetValue(departmentId, out string? value) ? value : null;
                 Console.WriteLine($" {id}\t\t|{roleName,-30}\t|{departmentName}");
@@ -436,7 +436,7 @@ public partial class EMS
         }
         else
         {
-            _logger.LogError(Constants.DropdownListError);
+            PrintError(Constants.DropdownListError);
         }
     }
 
@@ -452,5 +452,20 @@ public partial class EMS
             Console.Write(message);
         }
         Console.ForegroundColor = ConsoleColor.White;
+    }
+
+    public static void PrintSuccess(string message, bool newLine = true)
+    {
+        PrintConsoleMessage(message, ConsoleColor.Green, newLine);
+    }
+
+    public static void PrintError(string message, bool newLine = true)
+    {
+        PrintConsoleMessage(message, ConsoleColor.Red, newLine);
+    }
+
+    public static void PrintWarning(string message, bool newLine = true)
+    {
+        PrintConsoleMessage(message, ConsoleColor.Yellow, newLine);
     }
 }
