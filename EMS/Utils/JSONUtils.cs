@@ -8,7 +8,6 @@ public class JSONUtils
 
     public List<T> ReadJSON<T>(string filePath)
     {
-        Console.WriteLine("Reading JSON file " + filePath);
         List<T> items;
         try
         {

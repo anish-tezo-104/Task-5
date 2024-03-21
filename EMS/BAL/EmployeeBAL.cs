@@ -87,8 +87,6 @@ public class EmployeeBAL : IEmployeeBAL
 
         foreach (EmployeeDetails employee in employees)
         {
-
-            employee.EmpNo = employee.EmpNo;
             employee.StatusName = statusNames.TryGetValue(employee.StatusId, out string? statusValue) ? statusValue : null;
             employee.LocationName = employee.LocationId.HasValue && locationNames.TryGetValue(employee.LocationId.Value, out string? locationValue) ? locationValue : null;
             employee.RoleName = employee.RoleId.HasValue && roleNames.TryGetValue(employee.RoleId.Value, out string? roleValue) ? roleValue : null;
