@@ -22,17 +22,18 @@ public class EmployeeDAL : IEmployeeDAL
         _filePath = _configuration["BasePath"] + _configuration["EmployeesJsonPath"];
     }
 
-    public bool Insert(Employee employee)
+    public bool Insert(EmployeeDetails employee)
     {
-        List<Employee> existingEmployees = _jsonUtils.ReadJSON<Employee>(_filePath);
+        List<EmployeeDetails> existingEmployees = _jsonUtils.ReadJSON<EmployeeDetails>(_filePath);
         existingEmployees.Add(employee);
+        List<Employee> employees = ConvertEmployeeDetailsToEmployee(existingEmployees);
         try
         {
-            _jsonUtils.WriteJSON(existingEmployees, _filePath);
+            _jsonUtils.WriteJSON(employees, _filePath);
         }
         catch (Exception ex)
         {
-            _logger.LogError($"Error writing to file '{_filePath}': {ex.Message}");
+            _logger.LogError(ex.Message);
             return false;
         }
         return true;
@@ -48,10 +49,12 @@ public class EmployeeDAL : IEmployeeDAL
         return employees;
     }
 
-    public bool Update(string empNo, Employee employee)
+    public bool Update(string empNo, EmployeeDetails employee)
     {
-        List<Employee> existingEmployees = _jsonUtils.ReadJSON<Employee>(_filePath);
-        Employee dbEmployee = existingEmployees.FirstOrDefault(emp => emp.EmpNo == empNo) ?? throw new Exception("Employee not found.");
+        List<EmployeeDetails> existingEmployees = _jsonUtils.ReadJSON<EmployeeDetails>(_filePath);
+
+        EmployeeDetails dbEmployee = existingEmployees.FirstOrDefault(emp => emp.EmpNo == empNo) ?? throw new Exception("Employee not found.");
+
         dbEmployee.FirstName = GetUpdatedValue(employee.FirstName, dbEmployee.FirstName);
         dbEmployee.LastName = GetUpdatedValue(employee.LastName, dbEmployee.LastName);
         dbEmployee.Dob = employee.Dob ?? dbEmployee.Dob;
@@ -63,9 +66,12 @@ public class EmployeeDAL : IEmployeeDAL
         dbEmployee.DepartmentId = GetUpdatedValue(employee.DepartmentId, dbEmployee.DepartmentId);
         dbEmployee.AssignManagerId = GetUpdatedValue(employee.AssignManagerId, dbEmployee.AssignManagerId);
         dbEmployee.AssignProjectId = GetUpdatedValue(employee.AssignProjectId, dbEmployee.AssignProjectId);
+
+        List<Employee> employees = ConvertEmployeeDetailsToEmployee(existingEmployees);
+
         try
         {
-            _jsonUtils.WriteJSON(existingEmployees, _filePath);
+            _jsonUtils.WriteJSON(employees, _filePath);
         }
         catch (Exception ex)
         {
@@ -171,5 +177,37 @@ public class EmployeeDAL : IEmployeeDAL
             return oldValue;
         }
         return newValue;
+    }
+
+    private static List<Employee> ConvertEmployeeDetailsToEmployee(List<EmployeeDetails> employees)
+    {
+        if (employees == null || employees.Count == 0)
+        {
+            return []; // Return an empty list
+        }
+
+        // Perform conversion logic here
+        List<Employee> convertedEmployees = [];
+        foreach (var employeeDetails in employees)
+        {
+            Employee employee = new()
+            {
+                EmpNo = employeeDetails.EmpNo,
+                FirstName = employeeDetails.FirstName,
+                LastName = employeeDetails.LastName,
+                Dob = employeeDetails.Dob,
+                Email = employeeDetails.Email,
+                MobileNumber = employeeDetails.MobileNumber,
+                JoiningDate = employeeDetails.JoiningDate,
+                LocationId = employeeDetails.LocationId,
+                RoleId = employeeDetails.RoleId,
+                DepartmentId = employeeDetails.DepartmentId,
+                AssignManagerId = employeeDetails.AssignManagerId,
+                AssignProjectId = employeeDetails.AssignProjectId,
+                StatusId = employeeDetails.StatusId
+            };
+            convertedEmployees.Add(employee);
+        }
+        return convertedEmployees;
     }
 }

@@ -1,5 +1,6 @@
 using EMS.DAL.DBO;
 using EMS.DAL.DTO;
+using EMS.Models;
 using Microsoft.Extensions.Configuration;
 using System.Globalization;
 using System.Reflection;
@@ -10,11 +11,11 @@ namespace EMS;
 public partial class EMS
 {
     //Employees related Partial Functions
-    private static partial Employee GetEmployeeDataFromConsole()
+    private static partial EmployeeDetails GetEmployeeDataFromConsole()
     {
         PrintConsoleMessage("Enter employee details:\n");
         bool required = true;
-        Employee employee = new();
+        EmployeeDetails employee = new();
         string? empNo = ValidateEmployeeNo("Employee Number", required);
         employee.EmpNo = string.IsNullOrWhiteSpace(empNo) ? null : empNo;
         employee.StatusId = 1;
@@ -66,8 +67,8 @@ public partial class EMS
 
     private static bool IsEmpNoDuplicate(string empNo)
     {
-        string employeeJsonPath = _configuration["BasePath"] + _configuration["EmployeeJsonPath"];
-        List<Employee> employees = _jsonUtils.ReadJSON<Employee>(employeeJsonPath);
+        string employeeJsonPath = _configuration["BasePath"] + _configuration["EmployeesJsonPath"];
+        List<EmployeeDetails> employees = _jsonUtils.ReadJSON<EmployeeDetails>(employeeJsonPath);
         return employees.Any(x => x.EmpNo == empNo);
     }
 
@@ -84,7 +85,6 @@ public partial class EMS
         var department = departments.FirstOrDefault(d => d.Id == departmentId);
         if (department == null)
         {
-            PrintError($"Department with ID '{departmentId}' not found.");
             return null;
         }
 
@@ -290,19 +290,9 @@ public partial class EMS
         } while (true);
     }
 
-    private static partial EmployeeFilters? GetSearchKeywordFromConsole()
+    private static partial EmployeeDetails GetUpdatedDataFromUser()
     {
-        EmployeeFilters filters = new();
-
-        PrintConsoleMessage("Enter the search keyword:");
-        filters.Search = Console.ReadLine()?.Trim();
-
-        return filters;
-    }
-
-    private static partial Employee GetUpdatedDataFromUser()
-    {
-        Employee employee = new()
+        EmployeeDetails employee = new()
         {
             FirstName = GetDataFromField("First Name")!,
             LastName = GetDataFromField("Last Name")!,

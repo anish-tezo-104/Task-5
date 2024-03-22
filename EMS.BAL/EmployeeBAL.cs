@@ -30,25 +30,28 @@ public class EmployeeBAL : IEmployeeBAL
         return employees;
     }
 
-    public bool AddEmployee(Employee employee)
+    public bool AddEmployee(EmployeeDetails employee)
     {
         return _employeeDal.Insert(employee);
     }
 
-    public bool DeleteEmployees(string empNo)
+    public bool DeleteEmployee(string empNo)
     {
         return _employeeDal.Delete(empNo);
     }
 
-    public bool UpdateEmployee(string empNo, Employee employee)
+    public bool UpdateEmployee(string empNo, EmployeeDetails employee)
     {
         return _employeeDal.Update(empNo, employee);
     }
 
-    public List<EmployeeDetails>? SearchEmployees(EmployeeFilters keyword)
+    public List<EmployeeDetails>? SearchEmployees(string keyword)
     {
         List<EmployeeDetails> searchedEmployees;
-        searchedEmployees = _employeeDal.Filter(keyword)?? [];
+        EmployeeFilters filters = new();
+        filters.Search = keyword;
+
+        searchedEmployees = _employeeDal.Filter(filters)?? [];
         if (searchedEmployees != null && searchedEmployees.Count > 0)
         {
             searchedEmployees = GetEmployeeDetails(searchedEmployees);

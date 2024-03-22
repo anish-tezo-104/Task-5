@@ -10,6 +10,7 @@ using Microsoft.Extensions.Configuration;
 using EMS.DAL.DTO;
 using EMS.DAL;
 using EMS.BAL;
+using EMS.Models;
 
 namespace EMS;
 
@@ -25,14 +26,13 @@ public partial class EMS
     private static readonly ILogger _logger;
     private static readonly IConfiguration _configuration;
 
-    private static partial Employee GetEmployeeDataFromConsole();
+    private static partial EmployeeDetails GetEmployeeDataFromConsole();
     private static partial Role GetRoleDataFromConsole();
 
     private static partial void PrintEmployeesDetails(List<EmployeeDetails> employees);
     private static partial IConfiguration GetIConfiguration();
     private static partial EmployeeFilters? GetEmployeeFiltersFromConsole();
-    private static partial EmployeeFilters? GetSearchKeywordFromConsole();
-    private static partial Employee GetUpdatedDataFromUser();
+    private static partial EmployeeDetails GetUpdatedDataFromUser();
     private static partial void PrintRoles(List<Role> roles);
 
     static EMS()
@@ -139,7 +139,7 @@ public partial class EMS
     {
         try
         {
-            Employee employee = GetEmployeeDataFromConsole();
+            EmployeeDetails employee = GetEmployeeDataFromConsole();
             if (employee == null)
             {
                 PrintError(Constants.GettingDataFromConsoleError);
@@ -187,8 +187,7 @@ public partial class EMS
         try
         {
             List<EmployeeDetails>? employees;
-            var filters = new EmployeeFilters { Search = empNo };
-            employees = _employeeBal.SearchEmployees(filters);
+            employees = _employeeBal.SearchEmployees(empNo);
 
             if (employees == null || employees.Count == 0)
             {
@@ -196,7 +195,7 @@ public partial class EMS
                 return;
             }
 
-            bool status = _employeeBal.DeleteEmployees(empNo);
+            bool status = _employeeBal.DeleteEmployee(empNo);
             if (status)
             {
                 PrintSuccess(Constants.DeleteEmployeeSuccess);
@@ -217,8 +216,7 @@ public partial class EMS
         List<EmployeeDetails>? employees;
         try
         {
-            var filters = new EmployeeFilters { Search = empNo };
-            employees = _employeeBal.SearchEmployees(filters);
+            employees = _employeeBal.SearchEmployees(empNo);
         }
         catch (Exception ex)
         {
@@ -234,7 +232,7 @@ public partial class EMS
 
         PrintEmployeesDetails(employees);
         PrintConsoleMessage("\nPress 'Enter' to keep the original value.");
-        Employee updatedEmployee = GetUpdatedDataFromUser();
+        EmployeeDetails updatedEmployee = GetUpdatedDataFromUser();
         try
         {
             bool status = _employeeBal.UpdateEmployee(empNo, updatedEmployee);
@@ -255,7 +253,8 @@ public partial class EMS
 
     private static void SearchEmployee()
     {
-        EmployeeFilters? keyword = GetSearchKeywordFromConsole();
+        PrintConsoleMessage("Enter the keyword :  ");
+        string? keyword = Console.ReadLine()?.Trim();
         if (keyword == null)
         {
             PrintError(Constants.ErrorMessage);

@@ -1,4 +1,5 @@
 using EMS.DAL.DBO;
+using EMS.DAL.DTO;
 
 namespace EMS.DAL.Interfaces;
 

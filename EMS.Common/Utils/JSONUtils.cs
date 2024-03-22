@@ -30,6 +30,7 @@ public class JSONUtils
 
     public void WriteJSON<T>(List<T> data, string filePath)
     {
+        Console.WriteLine("Inside WriteJSON");
         try
         {
             string jsonData = JsonSerializer.Serialize(data);

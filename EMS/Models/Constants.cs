@@ -1,4 +1,4 @@
-namespace EMS.DAL.DTO;
+namespace EMS.Models;
 
 public class Constants
 {

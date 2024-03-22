@@ -1,4 +1,4 @@
-namespace EMS.DAL.DBO;
+namespace EMS.DAL.DTO;
 
 public class Dropdown
 {
