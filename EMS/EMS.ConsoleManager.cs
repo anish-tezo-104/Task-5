@@ -1,9 +1,11 @@
+using EMS.DAL.DBO;
+using EMS.DAL.DTO;
 using Microsoft.Extensions.Configuration;
-using EmployeeManagementSystem.Models;
 using System.Globalization;
 using System.Reflection;
+using System.Text.RegularExpressions;
 
-namespace EmployeeManagementSystem;
+namespace EMS;
 
 public partial class EMS
 {
@@ -13,26 +15,26 @@ public partial class EMS
         PrintConsoleMessage("Enter employee details:\n");
         bool required = true;
         Employee employee = new();
-        string empNo = ValidateEmployeeNo("Employee Number", required);
+        string? empNo = ValidateEmployeeNo("Employee Number", required);
         employee.EmpNo = string.IsNullOrWhiteSpace(empNo) ? null : empNo;
         employee.StatusId = 1;
-        string firstName = GetDataFromField("First Name", required);
+        string? firstName = GetDataFromField("First Name", required);
         employee.FirstName = string.IsNullOrWhiteSpace(firstName) ? null : firstName;
-        string lastName = GetDataFromField("Last Name");
+        string? lastName = GetDataFromField("Last Name", required);
         employee.LastName = string.IsNullOrWhiteSpace(lastName) ? null : lastName;
-        string dob = GetDataFromField("Date of Birth (YYYY-MM-DD)", required);
+        string? dob = GetDataFromField("Date of Birth (YYYY-MM-DD)");
         DateTime.TryParse(dob, out DateTime dobValue);
         employee.Dob = dobValue;
-        string email = GetDataFromField("Email", required);
+        string? email = GetDataFromField("Email", required);
         employee.Email = string.IsNullOrWhiteSpace(email) ? null : email;
-        string mobileNumber = GetDataFromField("Mobile Number");
+        string? mobileNumber = GetDataFromField("Mobile Number");
         employee.MobileNumber = string.IsNullOrWhiteSpace(mobileNumber) ? null : mobileNumber;
-        string joiningDate = GetDataFromField("Joining Date (YYYY-MM-DD)", required);
+        string? joiningDate = GetDataFromField("Joining Date (YYYY-MM-DD)", required);
         DateTime.TryParse(joiningDate, out DateTime joiningDateValue);
         employee.JoiningDate = joiningDateValue;
-        employee.LocationId = GetIdFromUser<Dropdown>("Location", "LocationJsonPath");
-        employee.DepartmentId = GetIdFromUser<Dropdown>("Department", "DepartmentJsonPath");
-        employee.RoleId = GetRoleIdFromUserForDepartment(employee.DepartmentId);
+        employee.LocationId = GetIdFromUser<Dropdown>("Location", "LocationJsonPath", required);
+        employee.DepartmentId = GetIdFromUser<Dropdown>("Department", "DepartmentJsonPath", required);
+        employee.RoleId = GetRoleIdFromUserForDepartment(employee.DepartmentId, required);
         employee.AssignManagerId = GetIdFromUser<Dropdown>("Assign Manager", "ManagerJsonPath");
         employee.AssignProjectId = GetIdFromUser<Dropdown>("Assign Project", "ProjectJsonPath");
         return employee;
@@ -41,11 +43,17 @@ public partial class EMS
     private static string? ValidateEmployeeNo(string fieldName, bool isRequired = false)
     {
         PrintConsoleMessage($"{fieldName}: ", ConsoleColor.White, false);
-        string empNo = Console.ReadLine();
+        string? empNo = Console.ReadLine();
         if (isRequired && (string.IsNullOrEmpty(empNo) || string.IsNullOrWhiteSpace(empNo)))
         {
             PrintWarning("Field is required. Please enter a value.\n");
             return GetDataFromField(fieldName, isRequired);
+        }
+
+        if (!string.IsNullOrEmpty(empNo) && !Regex.IsMatch(empNo, @"^TZ\d{4}$"))
+        {
+            PrintWarning("Employee No must be in the format 'TZ' followed by a four-digit number (e.g., TZ1001).\n");
+            return ValidateEmployeeNo(fieldName, isRequired);
         }
 
         if (empNo != null && IsEmpNoDuplicate(empNo))
@@ -63,7 +71,7 @@ public partial class EMS
         return employees.Any(x => x.EmpNo == empNo);
     }
 
-    private static int? GetRoleIdFromUserForDepartment(int? departmentId)
+    private static int? GetRoleIdFromUserForDepartment(int? departmentId, bool isRequired = false)
     {
         string departmentFilePath = _configuration["BasePath"] + _configuration["DepartmentJsonPath"];
         string roleFilePath = _configuration["BasePath"] + _configuration["RoleJsonPath"];
@@ -104,11 +112,11 @@ public partial class EMS
         PrintConsoleMessage("\n");
 
         // Prompt user to select a role
-        string userInput;
+        string? userInput;
         int? roleId;
         do
         {
-            userInput = GetDataFromField("Role");
+            userInput = GetDataFromField("Job Title", isRequired);
             if (string.IsNullOrWhiteSpace(userInput)) return null;
 
             roleId = FindIdInJson<Role>(userInput, roleFilePath);
@@ -125,7 +133,7 @@ public partial class EMS
     {
         string filePath = _configuration["BasePath"] + _configuration[jsonFilePathKey];
 
-        string userInput;
+        string? userInput;
         int? id;
         do
         {
@@ -158,13 +166,13 @@ public partial class EMS
                         {
                             if (property.PropertyType == typeof(string)) // to get the name property, Location name, manager name etc
                             {
-                                string value = (string)property.GetValue(item);
+                                string? value = (string?)property.GetValue(item);
                                 if (value != null && value.Equals(userInput, StringComparison.OrdinalIgnoreCase))
                                 {
-                                    PropertyInfo idProperty = typeof(T).GetProperty("Id");
+                                    PropertyInfo? idProperty = typeof(T).GetProperty("Id");
                                     if (idProperty != null)
                                     {
-                                        object idValue = idProperty.GetValue(item);
+                                        object? idValue = idProperty.GetValue(item);
                                         if (idValue is int id)
                                         {
                                             return id;
@@ -198,7 +206,7 @@ public partial class EMS
         EmployeeFilters filters = new();
         PrintConsoleMessage("\nEnter the filter criteria:\n\n");
 
-        string alphabetInput = GetDataFromField("Enter alphabet letters (separated by comma if multiple)");
+        string? alphabetInput = GetDataFromField("Enter alphabet letters (separated by comma if multiple)");
         filters.Alphabet = string.IsNullOrEmpty(alphabetInput) ? null : alphabetInput.Split(',').SelectMany(x => x.Trim().Select(char.ToLower)).ToList();
 
         ValidateFilters<Dropdown>("Location", "LocationJsonPath", out var locationIds);
@@ -229,7 +237,7 @@ public partial class EMS
                         PropertyInfo[] properties = typeof(T).GetProperties();
                         foreach (var property in properties)
                         {
-                            object value = property.GetValue(item);
+                            object? value = property.GetValue(item);
                             PrintConsoleMessage($"{value}  ", ConsoleColor.Cyan, false);
                         }
                         PrintConsoleMessage("\n");
@@ -249,7 +257,7 @@ public partial class EMS
 
     private static void ValidateFilters<T>(string fieldName, string jsonFilePathKey, out List<int> ids) where T : class
     {
-        string input;
+        string? input;
         ids = [];
         string filePath = _configuration["BasePath"] + _configuration[jsonFilePathKey];
         do
@@ -343,7 +351,7 @@ public partial class EMS
     private static string? GetDataFromField(string message, bool isRequired = false)
     {
         PrintConsoleMessage($"{message}: ", ConsoleColor.White, false);
-        string fieldInput = Console.ReadLine();
+        string? fieldInput = Console.ReadLine();
         if (isRequired && (string.IsNullOrEmpty(fieldInput) || string.IsNullOrWhiteSpace(fieldInput)))
         {
             PrintWarning("Field is required. Please enter a value.\n");
@@ -369,13 +377,15 @@ public partial class EMS
         PrintEmployeesTableHeader();
         foreach (EmployeeDetails employee in employees)
         {
-            string fullName = $"{employee.FirstName ?? null} {employee.LastName ?? null}";
-            string dob = employee.Dob?.ToString("dd-MM-yyyy") ?? null;
-            string email = employee.Email ?? null;
-            string mobileNumber = employee.MobileNumber ?? null;
-            string locationName = employee.LocationName ?? null;
-            string jobTitle = employee.RoleName ?? null;
-            string departmentName = employee.DepartmentName ?? null;
+            string? fullName = $"{employee.FirstName ?? null} {employee.LastName ?? null}";
+            string? dob = employee.Dob?.ToString("dd-MM-yyyy") ?? null;
+            string? email = employee.Email ?? null;
+            string? mobileNumber = employee.MobileNumber ?? null;
+            string? locationName = employee.LocationName ?? null;
+            string? jobTitle = employee.RoleName ?? null;
+            string? departmentName = employee.DepartmentName ?? null;
+            string? AssignManagerName = employee.AssignManagerName ?? null;
+            string? AssignProjectName = employee.AssignProjectName?? null;
 
             Console.WriteLine($" {employee.EmpNo}\t\t|{fullName,-20}\t|{employee.StatusName,-10}\t|{dob}\t|{email,-30}\t|{mobileNumber}\t|{locationName,-10}\t\t|{jobTitle,-30}\t|{departmentName}");
         }

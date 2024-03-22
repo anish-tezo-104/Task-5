@@ -1,12 +1,17 @@
-﻿using System.CommandLine;
+﻿
+using EMS.BAL.Interfaces;
+using EMS.Common.Logging;
+using EMS.Common.Utils;
+using EMS.DAL.Interfaces;
+using EMS.DAL.DBO;
+using System.CommandLine;
 using System.CommandLine.NamingConventionBinder;
 using Microsoft.Extensions.Configuration;
-using EmployeeManagementSystem.Utils;
-using EmployeeManagementSystem.DAL;
-using EmployeeManagementSystem.BAL;
-using EmployeeManagementSystem.Models;
+using EMS.DAL.DTO;
+using EMS.DAL;
+using EMS.BAL;
 
-namespace EmployeeManagementSystem;
+namespace EMS;
 
 public partial class EMS
 {
@@ -40,7 +45,7 @@ public partial class EMS
         _employeeDal = new EmployeeDAL(_logger, _jsonUtils, _configuration);
         _roleDal = new RoleDAL(_logger, _jsonUtils, _configuration);
         _employeeBal = new EmployeeBAL(_logger, _employeeDal, _dropdownBal);
-        _roleBal = new RoleBAL(_logger, _roleDal, _dropdownDal);
+        _roleBal = new RoleBAL( _roleDal);
     }
 
     public static int Main(string[] args)
@@ -161,7 +166,7 @@ public partial class EMS
         Console.WriteLine(_configuration["BasePath"] + _configuration["LocationJsonPath"]);
         try
         {
-            List<EmployeeDetails> employees = _employeeBal.GetAll();
+            List<EmployeeDetails>? employees = _employeeBal.GetAll();
             if (employees != null)
             {
                 PrintSuccess($"{employees.Count} {Constants.RetrieveAllEmployeesSuccess}");
@@ -181,7 +186,7 @@ public partial class EMS
     {
         try
         {
-            List<EmployeeDetails> employees;
+            List<EmployeeDetails>? employees;
             var filters = new EmployeeFilters { Search = empNo };
             employees = _employeeBal.SearchEmployees(filters);
 
@@ -209,7 +214,7 @@ public partial class EMS
 
     private static void UpdateEmployee(string empNo)
     {
-        List<EmployeeDetails> employees;
+        List<EmployeeDetails>? employees;
         try
         {
             var filters = new EmployeeFilters { Search = empNo };
@@ -258,7 +263,7 @@ public partial class EMS
         }
         try
         {
-            List<EmployeeDetails> employees = _employeeBal.SearchEmployees(keyword);
+            List<EmployeeDetails>? employees = _employeeBal.SearchEmployees(keyword);
             if (employees != null)
             {
                 PrintSuccess($"{Constants.SearchEmployeeSuccess} {employees.Count}");
@@ -285,7 +290,7 @@ public partial class EMS
         }
         try
         {
-            List<EmployeeDetails> employees = _employeeBal.FilterEmployees(filters);
+            List<EmployeeDetails>? employees = _employeeBal.FilterEmployees(filters);
             if (employees != null)
             {
                 PrintSuccess($"{Constants.FilterEmployeesSuccess} {employees.Count}");
@@ -347,7 +352,7 @@ public partial class EMS
     {
         try
         {
-            List<Role> roles = _roleBal.GetAll();
+            List<Role>? roles = _roleBal.GetAll();
             if (roles != null)
             {
                 PrintSuccess($"{roles.Count} {Constants.RetrieveAllRolesSuccess}");
