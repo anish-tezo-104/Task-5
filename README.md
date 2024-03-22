@@ -9,7 +9,7 @@ The <b>Employee Management System</b> is a command-line application designed to 
 To run the application, ensure you have the .NET SDK installed on your machine. Then, follow these steps:
 
 - Clone the repository to your local machine.
-- Navigate to the project directory.
+- Navigate to the project directory i.e <b>'EMS'</b> directory.
 - Run <b>`dotnet build`</b> to build the application.
 
 ## <b>Usage</b>
