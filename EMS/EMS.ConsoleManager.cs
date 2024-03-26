@@ -45,10 +45,10 @@ public partial class EMS
     {
         PrintConsoleMessage($"{fieldName}: ", ConsoleColor.White, false);
         string? empNo = Console.ReadLine();
-        if (isRequired && (string.IsNullOrEmpty(empNo) || string.IsNullOrWhiteSpace(empNo)))
+        if (empNo != null && IsEmpNoDuplicate(empNo))
         {
-            PrintWarning("Field is required. Please enter a value.\n");
-            return GetDataFromField(fieldName, isRequired);
+            PrintWarning($"Employee already exists.");
+            return ValidateEmployeeNo(fieldName, isRequired);
         }
 
         if (!string.IsNullOrEmpty(empNo) && !Regex.IsMatch(empNo, @"^TZ\d{4}$"))
@@ -57,11 +57,12 @@ public partial class EMS
             return ValidateEmployeeNo(fieldName, isRequired);
         }
 
-        if (empNo != null && IsEmpNoDuplicate(empNo))
+        if (isRequired && (string.IsNullOrEmpty(empNo) || string.IsNullOrWhiteSpace(empNo)))
         {
-            PrintWarning($"Employee already exists.");
-            ValidateEmployeeNo(fieldName, isRequired);
+            PrintWarning("Field is required. Please enter a value.\n");
+            return ValidateEmployeeNo(fieldName, isRequired);
         }
+
         return empNo;
     }
 
@@ -375,7 +376,7 @@ public partial class EMS
             string? jobTitle = employee.RoleName ?? null;
             string? departmentName = employee.DepartmentName ?? null;
             string? AssignManagerName = employee.AssignManagerName ?? null;
-            string? AssignProjectName = employee.AssignProjectName?? null;
+            string? AssignProjectName = employee.AssignProjectName ?? null;
 
             Console.WriteLine($" {employee.EmpNo}\t\t|{fullName,-20}\t|{employee.StatusName,-10}\t|{dob}\t|{email,-30}\t|{mobileNumber}\t|{locationName,-10}\t\t|{jobTitle,-30}\t|{departmentName}");
         }
