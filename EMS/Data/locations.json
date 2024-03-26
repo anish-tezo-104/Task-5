@@ -1,0 +1,26 @@
+[
+  {
+    "Id" : 1,
+    "Name" : "Hyderabad"
+  },
+  {
+    "Id" : 2,
+    "Name" : "Delhi"
+  },
+  {
+    "Id" : 3,
+    "Name" : "Mumbai"
+  },
+  {
+    "Id" : 4,
+    "Name" : "Bangalore"
+  },
+  {
+    "Id" : 5,
+    "Name" : "Seattle"
+  },
+  {
+    "Id" : 6,
+    "Name" : "New York"
+  }
+]

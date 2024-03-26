@@ -1,0 +1,152 @@
+[
+  {
+    "Id": 1,
+    "Name": "Software Engineer",
+    "DepartmentId": 1
+  },
+  {
+    "Id": 2,
+    "Name": "Product Manager",
+    "DepartmentId": 1
+  },
+  {
+    "Id": 3,
+    "Name": "Frontend Developer",
+    "DepartmentId": 1
+  },
+  {
+    "Id": 4,
+    "Name": "Data Scientist",
+    "DepartmentId": 1
+  },
+  {
+    "Id": 5,
+    "Name": "Software Engineer Trainee",
+    "DepartmentId": 1
+  },
+  {
+    "Id": 6,
+    "Name": "Marketing Specialist",
+    "DepartmentId": 2
+  },
+  {
+    "Id": 7,
+    "Name": "Content Writer",
+    "DepartmentId": 2
+  },
+  {
+    "Id": 8,
+    "Name": "Marketing Manager",
+    "DepartmentId": 2
+  },
+  {
+    "Id": 9,
+    "Name": "Social Media Manager",
+    "DepartmentId": 2
+  },
+  {
+    "Id": 10,
+    "Name": "SEO Specialist",
+    "DepartmentId": 2
+  },
+  {
+    "Id": 11,
+    "Name": "Financial Analyst",
+    "DepartmentId": 3
+  },
+  {
+    "Id": 12,
+    "Name": "Accountant",
+    "DepartmentId": 3
+  },
+  {
+    "Id": 13,
+    "Name": "Financial Manager",
+    "DepartmentId": 3
+  },
+  {
+    "Id": 14,
+    "Name": "Budget Analyst",
+    "DepartmentId": 3
+  },
+  {
+    "Id": 15,
+    "Name": "Tax Specialist",
+    "DepartmentId": 3
+  },
+  {
+    "Id": 16,
+    "Name": "HR Coordinator",
+    "DepartmentId": 4
+  },
+  {
+    "Id": 17,
+    "Name": "Recruiter",
+    "DepartmentId": 4
+  },
+  {
+    "Id": 18,
+    "Name": "Training Specialist",
+    "DepartmentId": 4
+  },
+  {
+    "Id": 19,
+    "Name": "HR Manager",
+    "DepartmentId": 4
+  },
+  {
+    "Id": 20,
+    "Name": "Compensation Analyst",
+    "DepartmentId": 4
+  },
+  {
+    "Id": 21,
+    "Name": "Sales Representative",
+    "DepartmentId": 5
+  },
+  {
+    "Id": 22,
+    "Name": "Sales Manager",
+    "DepartmentId": 5
+  },
+  {
+    "Id": 23,
+    "Name": "Account Executive",
+    "DepartmentId": 5
+  },
+  {
+    "Id": 24,
+    "Name": "Business Development Manager",
+    "DepartmentId": 5
+  },
+  {
+    "Id": 25,
+    "Name": "Customer Success Manager",
+    "DepartmentId": 5
+  },
+  {
+    "Id": 26,
+    "Name": "Customer Support Specialist",
+    "DepartmentId": 6
+  },
+  {
+    "Id": 27,
+    "Name": "Customer Service Manager",
+    "DepartmentId": 6
+  },
+  {
+    "Id": 28,
+    "Name": "Technical Support Engineer",
+    "DepartmentId": 6
+  },
+  {
+    "Id": 29,
+    "Name": "Client Success Manager",
+    "DepartmentId": 6
+  },
+  {
+    "Id": 30,
+    "Name": "Call Center Supervisor",
+    "DepartmentId": 6
+  }
+]

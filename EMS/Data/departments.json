@@ -1,0 +1,26 @@
+[
+  {
+    "Id": 1,
+    "Name": "IT"
+  },
+  {
+    "Id": 2,
+    "Name": "Marketing"
+  },
+  {
+    "Id": 3,
+    "Name": "Finance"
+  },
+  {
+    "Id": 4,
+    "Name": "Human Resources"
+  },
+  {
+    "Id": 5,
+    "Name": "Sales"
+  },
+  {
+    "Id": 6,
+    "Name": "Customer Service"
+  }
+]
